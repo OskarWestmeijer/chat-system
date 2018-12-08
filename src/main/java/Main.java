@@ -1,8 +1,9 @@
 public class Main {
 
     public static void main(String[] args){
-        ServerController serverController = new ServerController(1000);
-
+        System.out.println("App started");
+        ServerController serverController = new ServerController(1992);
+        serverController.listenForConnection();
     }
 
 }

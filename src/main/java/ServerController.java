@@ -1,47 +1,47 @@
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerController {
 
-    private Socket socket = null;
-    private ServerSocket server = null;
-    private DataInputStream streamIn = null;
+    private Socket socket;
+
+    private ServerSocket server;
+
+    private boolean isListening = false;
+
+    private List<Client> connectedClients = new ArrayList<>();
 
     public ServerController(int port) {
+        System.out.println("Created Server Ctrl");
         try {
-            System.out.println("Binding to port " + port + ", please wait  ...");
-            server = new ServerSocket(port);
-            System.out.println("Server started: " + server);
-            System.out.println("Waiting for a client ...");
-            socket = server.accept();
-            System.out.println("Client accepted: " + socket);
-            open();
-            boolean done = false;
-            while (!done) {
-                try {
-                    String line = streamIn.readUTF();
-                    System.out.println(line);
-                    done = line.equals(".bye");
-                } catch (IOException ioe) {
-                    done = true;
-                }
-            }
-            close();
-        } catch (IOException ioe) {
-            System.out.println(ioe);
+            this.server = new ServerSocket(port);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public void open() throws IOException {
-        streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+    public void listenForConnection() {
+        try {
+            isListening = true;
+
+            while (isListening) {
+                newClientConnection(server.accept());
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void close() throws IOException {
-        if (socket != null) socket.close();
-        if (streamIn != null) streamIn.close();
+    private void newClientConnection(Socket socket){
+        System.out.println("New Client joined.");
+        Client client = new Client(socket, connectedClients);
+        connectedClients.add(client);
+        Thread thread = new Thread(client);
+        thread.start();
     }
 
 }
