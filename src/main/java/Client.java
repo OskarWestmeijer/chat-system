@@ -37,16 +37,17 @@ public class Client implements Runnable {
             String message;
             System.out.println("waiting for msg");
             while (isConnected && (message = bufferedReader.readLine()) != null) {
-                System.out.println("Received msg: " + message);
+                System.out.println("Received from "+socket.getInetAddress()+ " : " + message);
                 if (message.equals("q!"))
                     disconnect();
                 else
-                    for (Client c : connectedClients) {
-                        c.getPrintWriter().println(message);
+                    for (Client c : ServerController.CONNECTED_CLIENTS) {
+                        c.getPrintWriter().println(socket.getInetAddress()+" says: " + message);
                         c.getPrintWriter().flush();
                     }
             }
         } catch (IOException e) {
+            disconnect();
             e.printStackTrace();
         }
     }
@@ -54,10 +55,13 @@ public class Client implements Runnable {
 
     public void disconnect() {
         try {
+            System.out.println("Client: "+ socket.getInetAddress()+" left the chat.");
+            isConnected = false;
             bufferedReader.close();
             inputStreamReader.close();
             printWriter.close();
             socket.close();
+            ServerController.CONNECTED_CLIENTS.remove(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
