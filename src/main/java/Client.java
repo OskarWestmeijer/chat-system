@@ -7,6 +7,8 @@ import java.util.List;
 
 public class Client implements Runnable {
 
+    ChatMessageRepository chatMessageRepository;
+
     private Socket socket;
 
     private InputStreamReader inputStreamReader;
@@ -17,11 +19,9 @@ public class Client implements Runnable {
 
     private boolean isConnected = true;
 
-    private List<Client> connectedClients;
-
-    public Client(Socket socket, List<Client> connectedClients) {
+    public Client(Socket socket) {
         try {
-            this.connectedClients = connectedClients;
+            this.chatMessageRepository = new ChatMessageRepositoryImpl();
             this.socket = socket;
             this.inputStreamReader = new InputStreamReader(socket.getInputStream());
             this.bufferedReader = new BufferedReader(inputStreamReader);
@@ -37,6 +37,7 @@ public class Client implements Runnable {
             String message;
             System.out.println("waiting for msg");
             while (isConnected && (message = bufferedReader.readLine()) != null) {
+                chatMessageRepository.insertMessage(null);
                 System.out.println("Received from "+socket.getInetAddress()+ " : " + message);
                 if (message.equals("q!"))
                     disconnect();

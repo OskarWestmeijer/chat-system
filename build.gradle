@@ -12,7 +12,13 @@ repositories {
 }
 
 dependencies {
+    compile group: 'org.hibernate', name: 'hibernate-core', version: '5.4.0.Final'
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    compileOnly 'org.mapstruct:mapstruct-jdk8:1.2.0.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.2.0.Final'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:2.3.0'
+    compileOnly 'org.projectlombok:lombok:1.18.4'
+    annotationProcessor 'org.projectlombok:lombok:1.18.4'
 }
 
 jar {

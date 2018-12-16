@@ -38,7 +38,7 @@ public class ServerController {
 
     private void newClientConnection(Socket socket) {
         System.out.println("New Client " + socket.getInetAddress() + " joined.");
-        Client client = new Client(socket, CONNECTED_CLIENTS);
+        Client client = new Client(socket);
         CONNECTED_CLIENTS.add(client);
         Thread thread = new Thread(client);
         thread.start();
