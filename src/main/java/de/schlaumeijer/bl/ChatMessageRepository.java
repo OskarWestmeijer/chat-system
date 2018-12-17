@@ -1,5 +1,8 @@
+package de.schlaumeijer.bl;
+
+import de.schlaumeijer.shared.ChatMessageDto;
+
 import java.util.List;
-import java.util.UUID;
 
 public interface ChatMessageRepository {
 

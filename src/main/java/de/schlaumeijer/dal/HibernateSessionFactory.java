@@ -1,3 +1,5 @@
+package de.schlaumeijer.dal;
+
 import java.io.File;
 
 import org.hibernate.SessionFactory;

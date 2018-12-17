@@ -1,5 +1,8 @@
+package de.schlaumeijer.dal;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
@@ -9,9 +12,11 @@ import javax.persistence.Table;
 import java.util.Date;
 import java.util.UUID;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "chat_messages")
-@Data
 public class ChatMessageEntity {
 
     @Id
@@ -32,4 +37,5 @@ public class ChatMessageEntity {
     private Date date;
 
 }
+
 
