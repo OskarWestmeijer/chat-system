@@ -20,7 +20,7 @@ import java.util.UUID;
 public class ChatMessageEntity {
 
     @Id
-    @Type(type="uuid-char")
+    @Type(type="pg-uuid")
     @Column(name = "uuid")
     private UUID uuid;
 

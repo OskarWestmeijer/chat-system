@@ -17,7 +17,7 @@ public class ClientConnectionRepositoryImpl implements ClientConnectionRepositor
     public void insertConntection(ClientConnectionDto clientConnectionDto) {
         ClientConnectionEntity clientConnectionEntity = clientConnectionMapper.mapToEntity(clientConnectionDto);
 
-        Session session = HibernateSessionFactory.sessionFactory.openSession();
+        Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         session.save(clientConnectionEntity);
         transaction.commit();
@@ -28,7 +28,7 @@ public class ClientConnectionRepositoryImpl implements ClientConnectionRepositor
     public void updateDissconect(ClientConnectionDto clientConnectionDto) {
         ClientConnectionEntity clientConnectionEntity = clientConnectionMapper.mapToEntity(clientConnectionDto);
 
-        Session session = HibernateSessionFactory.sessionFactory.openSession();
+        Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         session.save(clientConnectionEntity);
         transaction.commit();
@@ -37,7 +37,7 @@ public class ClientConnectionRepositoryImpl implements ClientConnectionRepositor
 
     @Override
     public List<ClientConnectionDto> readHistoryOfConnections() {
-        Session session = HibernateSessionFactory.sessionFactory.openSession();
+        Session session = HibernateSessionFactory.getSessionFactory().openSession();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<ClientConnectionEntity> criteria = builder.createQuery(ClientConnectionEntity.class);
         criteria.from(ClientConnectionEntity.class);

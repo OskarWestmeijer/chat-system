@@ -20,14 +20,14 @@ import java.util.UUID;
 public class ClientConnectionEntity {
 
     @Id
-    @Type(type = "uuid-char")
+    @Type(type = "pg-uuid")
     @Column(name = "uuid")
     private UUID uuid;
 
     @Column(name = "ip_adress")
     private String ipAdress;
 
-    @Column(name = "name")
+    @Column(name = "sender_name")
     private String name;
 
     @Column(name = "date_connected")

@@ -14,7 +14,7 @@ public class HibernateSessionFactoryTest {
     @Test
     public void insertChatMessageEntity() {
         ChatMessageEntity chatMessageEntity = createChatMessageEntity();
-        Session session = HibernateSessionFactory.sessionFactory.openSession();
+        Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         session.save(chatMessageEntity);
         transaction.commit();
@@ -24,7 +24,7 @@ public class HibernateSessionFactoryTest {
     @Test
     public void insertClientConnectionEntity() {
         ClientConnectionEntity clientConnectionEntity = createClientConnectionEntity();
-        Session session = HibernateSessionFactory.sessionFactory.openSession();
+        Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         session.save(clientConnectionEntity);
         transaction.commit();
@@ -33,12 +33,12 @@ public class HibernateSessionFactoryTest {
 
     @Test
     public void readMessageByUUID() {
-        Session session = HibernateSessionFactory.sessionFactory.openSession();
+        Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
-        ChatMessageEntity chatMessageEntity = session.get(ChatMessageEntity.class, UUID.fromString("fca45063-c908-4525-a930-4ca3dbd61389"));
+        ChatMessageEntity chatMessageEntity = session.get(ChatMessageEntity.class, UUID.fromString("d6d0da84-9c7a-4e61-b14e-eabaf3e46bed"));
         session.close();
-        Assert.assertEquals(chatMessageEntity.getSenderName(), "oskar");
-        Assert.assertEquals(chatMessageEntity.getMessage(), "HelloWorld from MariaDB!");
+        Assert.assertEquals(chatMessageEntity.getSenderName(), "Blug");
+        Assert.assertEquals(chatMessageEntity.getMessage(), "HelloFromMe");
     }
 
     private ChatMessageEntity createChatMessageEntity() {
@@ -57,7 +57,7 @@ public class HibernateSessionFactoryTest {
         clientConnectionEntity.setName("oskar");
         clientConnectionEntity.setIpAdress("localhost");
         clientConnectionEntity.setConnectionDate(new Date(System.currentTimeMillis()));
-        clientConnectionEntity.setDissconecionDate(new Date(System.currentTimeMillis() + 500000));
+        clientConnectionEntity.setDisconnectionDate(new Date(System.currentTimeMillis() + 500000));
         return clientConnectionEntity;
     }
 

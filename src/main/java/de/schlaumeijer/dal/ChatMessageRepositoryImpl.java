@@ -18,7 +18,7 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepository {
     public void insertMessage(ChatMessageDto chatMessageDto) {
         ChatMessageEntity chatMessageEntity = chatMessageMapper.mapToEntity(chatMessageDto);
 
-        Session session = HibernateSessionFactory.sessionFactory.openSession();
+        Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         session.save(chatMessageEntity);
         transaction.commit();
@@ -35,7 +35,7 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepository {
 
     @Override
     public List<ChatMessageDto> readAllMessages() {
-        Session session = HibernateSessionFactory.sessionFactory.openSession();
+        Session session = HibernateSessionFactory.getSessionFactory().openSession();
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<ChatMessageEntity> criteria = builder.createQuery(ChatMessageEntity.class);
         criteria.from(ChatMessageEntity.class);
