@@ -8,9 +8,11 @@ pipeline {
             steps {
                 sh 'gradle --version'
             }
-            stage('Gradle Build') {
-                    sh './gradlew clean build'
                 }
+            stage('Gradle Build') {
+            steps{
+                    sh './gradlew clean build'
+              }
         }
     }
 }
