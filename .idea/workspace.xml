@@ -11,7 +11,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="765ed59e-9e5c-4ed3-827f-b4fa09f6fe51" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/jenkins/Jenkinsfile" beforeDir="false" afterPath="$PROJECT_DIR$/Jenkinsfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Jenkinsfile" beforeDir="false" afterPath="$PROJECT_DIR$/Jenkinsfile" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/.gradle/" />
@@ -82,7 +82,11 @@
       </file>
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Jenkinsfile">
-          <provider selected="true" editor-type-id="text-editor" />
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="32">
+              <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
+            </state>
+          </provider>
         </entry>
       </file>
     </leaf>
@@ -137,6 +141,7 @@
         <option value="$PROJECT_DIR$/src/test/java/HibernateSessionFactoryTest.java" />
         <option value="$PROJECT_DIR$/jenkins/jenkinsfile" />
         <option value="$PROJECT_DIR$/jenkins/Jenkinsfile" />
+        <option value="$PROJECT_DIR$/Jenkinsfile" />
       </list>
     </option>
   </component>
@@ -199,14 +204,15 @@
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="O:\workspace\chat-server" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="O:\workspace\chat-server" />
       <recent name="O:\workspace\chat-server\src\main" />
       <recent name="O:\workspace\chat-server\src" />
       <recent name="O:\workspace\chat-server\src\main\resources" />
       <recent name="O:\workspace\chat-server\src\main\java\de\schlaumeijer" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="O:\workspace\chat-server" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -378,6 +384,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Designer" order="0" />
       <window_info id="UI Designer" order="1" />
@@ -658,7 +665,11 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Jenkinsfile">
-      <provider selected="true" editor-type-id="text-editor" />
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="32">
+          <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
     </entry>
   </component>
   <component name="masterDetails">
