@@ -7,7 +7,7 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 #hibernate
-hibernate.cfg.xml
+#hibernate.cfg.xml
 
 #gradle
 .gradle

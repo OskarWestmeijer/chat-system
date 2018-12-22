@@ -13,7 +13,6 @@ public class HibernateSessionFactoryTest {
 
     @Test
     public void insertChatMessageEntity() {
-        ClientConnectionEntity clientConnectionEntity = new ClientConnectionEntity();
         ChatMessageEntity chatMessageEntity = createChatMessageEntity();
         Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
