@@ -16,7 +16,6 @@ public class ClientConnectionRepositoryImpl implements ClientConnectionRepositor
     @Override
     public void insertConntection(ClientConnectionDto clientConnectionDto) {
         ClientConnectionEntity clientConnectionEntity = clientConnectionMapper.mapToEntity(clientConnectionDto);
-
         Session session = HibernateSessionFactory.getSessionFactory().openSession();
         Transaction transaction = session.beginTransaction();
         session.save(clientConnectionEntity);
