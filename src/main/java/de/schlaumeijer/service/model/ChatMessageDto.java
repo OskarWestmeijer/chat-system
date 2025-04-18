@@ -1,5 +1,6 @@
-package de.schlaumeijer.shared;
+package de.schlaumeijer.service.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -12,6 +13,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ChatMessageDto implements Serializable {
 
+  @Serial
+  private static final long serialVersionUID = 15071992L;
+
   private UUID uuid;
 
   private String senderIp;
@@ -22,5 +26,6 @@ public class ChatMessageDto implements Serializable {
 
   private Date date;
 
+  private ClientConnectionDto clientConnectionDto;
 
 }

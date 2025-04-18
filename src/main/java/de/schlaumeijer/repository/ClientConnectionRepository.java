@@ -1,6 +1,6 @@
-package de.schlaumeijer.bl;
+package de.schlaumeijer.repository;
 
-import de.schlaumeijer.shared.ClientConnectionDto;
+import de.schlaumeijer.service.model.ClientConnectionDto;
 import java.util.List;
 
 public interface ClientConnectionRepository {
@@ -9,6 +9,6 @@ public interface ClientConnectionRepository {
 
   void updateDissconect(ClientConnectionDto clientConnectionDto);
 
-  List<ClientConnectionDto> readHistoryOfConnections();
+  List<ClientConnectionDto> getClients();
 
 }

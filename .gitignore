@@ -79,7 +79,7 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
-# Editor-based Rest de.schlaumeijer.bl.ClientCtrl
+# Editor-based Rest de.schlaumeijer.service.ClientListener
 .idea/httpRequests
 
 # Android studio 3.1+ serialized cache file

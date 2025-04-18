@@ -1,6 +1,6 @@
-package de.schlaumeijer.bl;
+package de.schlaumeijer.repository;
 
-import de.schlaumeijer.shared.ChatMessageDto;
+import de.schlaumeijer.service.model.ChatMessageDto;
 import java.util.List;
 
 public interface ChatMessageRepository {
