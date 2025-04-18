@@ -1,39 +1,24 @@
 package de.schlaumeijer.dal;
 
+import java.util.Date;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Type;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.util.Date;
-import java.util.UUID;
-
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-@Entity
-@Table(name = "client_connections")
 public class ClientConnectionEntity {
 
-    @Id
-    @Type(type = "pg-uuid")
-    @Column(name = "uuid")
-    private UUID uuid;
+  private UUID uuid;
 
-    @Column(name = "ip_adress")
-    private String ipAdress;
+  private String ipAdress;
 
-    @Column(name = "sender_name")
-    private String name;
+  private String name;
 
-    @Column(name = "date_connected")
-    private Date connectionDate;
+  private Date connectionDate;
 
-    @Column(name = "date_disconnected")
-    private Date disconnectionDate;
+  private Date disconnectionDate;
 
 }
