@@ -1,26 +1,25 @@
 package de.schlaumeijer.shared;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.UUID;
-
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ClientConnectionDto implements Serializable {
 
-    private UUID uuid;
+  private UUID uuid;
 
-    private String ipAdress;
+  private String ipAdress;
 
-    private String name;
+  private String name;
 
-    private Date connectionDate;
+  private Date connectionDate;
 
-    private Date disconnectionDate;
+  private Date disconnectionDate;
 
 }

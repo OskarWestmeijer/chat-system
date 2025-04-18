@@ -26,4 +26,5 @@ public class ClientConnectionRepositoryImpl implements ClientConnectionRepositor
   public List<ClientConnectionDto> readHistoryOfConnections() {
     return clientConnectionMapper.mapToBoList(clientConnectionEntities);
   }
+
 }

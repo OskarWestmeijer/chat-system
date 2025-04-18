@@ -1,27 +1,26 @@
 package de.schlaumeijer.shared;
 
-import lombok.*;
-
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 public class ChatMessageDto implements Serializable {
 
-    private static final long serialVersionUID = 15071992;
+  private UUID uuid;
 
-    private UUID uuid;
+  private String senderIp;
 
-    private String senderIp;
+  private String senderName;
 
-    private String senderName;
+  private String message;
 
-    private String message;
-
-    private Date date;
+  private Date date;
 
 
 }
