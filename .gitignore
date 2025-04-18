@@ -9,6 +9,8 @@
 #hibernate
 #hibernate.cfg.xml
 
+.idea
+
 #gradle
 .gradle
 /build/
