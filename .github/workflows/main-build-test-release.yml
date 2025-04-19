@@ -16,8 +16,8 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: ${{ inputs.java }}
-          cache: maven
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
 
       - shell: bash
         run: |
