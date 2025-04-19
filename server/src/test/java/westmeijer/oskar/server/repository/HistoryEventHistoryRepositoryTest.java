@@ -5,9 +5,9 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import westmeijer.oskar.shared.model.ChatMessageDto;
+import westmeijer.oskar.shared.model.history.ClientMessage;
 
-class PublicEventHistoryRepositoryTest {
+class HistoryEventHistoryRepositoryTest {
 
   PublicEventHistoryRepository repo = PublicEventHistoryRepository.getInstance();
 
@@ -37,7 +37,7 @@ class PublicEventHistoryRepositoryTest {
   @Test
   void shouldAddPublicEvent() {
     var repo = PublicEventHistoryRepository.getInstance();
-    var message = mock(ChatMessageDto.class);
+    var message = mock(ClientMessage.class);
 
     repo.insertMessage(message);
 

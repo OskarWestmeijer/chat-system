@@ -10,8 +10,10 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import westmeijer.oskar.shared.model.history.ClientMessage;
+import westmeijer.oskar.shared.model.history.HistoryEventType;
 
-class ChatMessageDtoTest {
+class ClientMessageTest {
 
   @Test
   @SneakyThrows
@@ -20,17 +22,17 @@ class ChatMessageDtoTest {
     ObjectOutputStream oos = new ObjectOutputStream(bos);
 
     var message = "Hello";
-    var client = new ClientConnectionDto(UUID.randomUUID(), "ip", Instant.now());
-    var original = new ChatMessageDto(message, client);
+    var client = new ClientDetails(UUID.randomUUID(), "ip", Instant.now());
+    var original = new ClientMessage(message, client);
     oos.writeObject(original);
     oos.close();
 
     ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
-    ChatMessageDto copy = (ChatMessageDto) ois.readObject();
+    ClientMessage copy = (ClientMessage) ois.readObject();
 
     then(copy)
         .extracting("message", "event")
-        .containsExactly(message, ServerEvent.CHAT_MESSAGE_RECEIVED);
+        .containsExactly(message, HistoryEventType.CHAT_MESSAGE_RECEIVED);
   }
 
 

@@ -6,6 +6,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.time.Instant;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,8 +15,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import westmeijer.oskar.client.loggers.ChatLogger;
 import westmeijer.oskar.client.loggers.ServerLogger;
-import westmeijer.oskar.shared.model.ChatMessageDto;
-import westmeijer.oskar.shared.model.ClientConnectionDto;
+import westmeijer.oskar.shared.model.system.ChatHistoryResponse;
+import westmeijer.oskar.shared.model.system.ClientChatRequest;
+import westmeijer.oskar.shared.model.system.ClientCommandRequest;
+import westmeijer.oskar.shared.model.system.ClientListResponse;
+import westmeijer.oskar.shared.model.system.RelayedChatMessage;
+import westmeijer.oskar.shared.model.system.SystemEvent;
+import westmeijer.oskar.shared.model.system.SystemEventType;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -63,19 +70,45 @@ public class ClientController {
 
   private void writeMessageLoop() {
     try {
-      ServerLogger.log("--- Waiting for input ---");
+      ServerLogger.log("Start chatting. available commands: '/clients', '/history', '/quit'");
       while (isConnected) {
         String userInput = scanner.nextLine();
-        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
-            .message(userInput)
-            .build();
-        objectOutputStream.writeObject(chatMessageDto);
-        objectOutputStream.flush();
 
-        if (userInput.equals("/quit")) {
-          disconnect();
+        switch (userInput) {
+          case "/clients" -> sendClientRequest(SystemEventType.LIST_CLIENTS);
+          case "/history" -> sendClientRequest(SystemEventType.CHAT_HISTORY);
+          case "/quit" -> sendClientRequest(SystemEventType.DISCONNECTION_REQUEST);
+          default -> sendClientChatRequest(userInput);
         }
       }
+    } catch (Exception e) {
+      log.error("Exception thrown.", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void sendClientChatRequest(String message) {
+    try {
+      ClientChatRequest clientChatRequest = ClientChatRequest.builder()
+          .message(message)
+          .sendAt(Instant.now())
+          .build();
+      objectOutputStream.writeObject(clientChatRequest);
+      objectOutputStream.flush();
+    } catch (Exception e) {
+      log.error("Exception thrown.", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void sendClientRequest(SystemEventType type) {
+    try {
+      var event = ClientCommandRequest.builder()
+          .eventType(type)
+          .sendAt(Instant.now())
+          .build();
+      objectOutputStream.writeObject(event);
+      objectOutputStream.flush();
     } catch (Exception e) {
       log.error("Exception thrown.", e);
       throw new RuntimeException(e);
@@ -92,7 +125,7 @@ public class ClientController {
         while (isConnected) {
           Object serverMessage = objectInputStream.readObject();
           if (serverMessage != null) {
-            processServerMessage(serverMessage);
+            processReceivedMessage(serverMessage);
           }
         }
       } catch (Exception e) {
@@ -103,30 +136,44 @@ public class ClientController {
     executorService.submit(listenForMessagesTask);
   }
 
-  private void processServerMessage(Object serverMessage) {
-    log.trace("Received message: {}", serverMessage);
-    if (serverMessage instanceof ChatMessageDto) {
-      processChatMessageDto((ChatMessageDto) serverMessage);
-    } else if (serverMessage instanceof ClientConnectionDto) {
-      processClientConnectionDto((ClientConnectionDto) serverMessage);
+  private void processReceivedMessage(Object message) {
+    log.trace("Received message: {}", message);
+    if (message instanceof ChatHistoryResponse) {
+      processChatHistoryResponse((ChatHistoryResponse) message);
+    } else if (message instanceof ClientListResponse) {
+      processClientListResponse((ClientListResponse) message);
+    } else if (message instanceof SystemEvent) {
+      processSystemEvent((SystemEvent) message);
+    } else if (message instanceof RelayedChatMessage) {
+      processClientMessage((RelayedChatMessage) message);
+    } else {
+      throw new RuntimeException("Could not process received message. %s".formatted(message));
     }
   }
 
-  private void processClientConnectionDto(ClientConnectionDto clientConnectionDto) {
-    ServerLogger.log(clientConnectionDto.toString());
+  private void processChatHistoryResponse(ChatHistoryResponse message) {
+    message.getMessageHistory().forEach(ServerLogger::log);
   }
 
-  private void processChatMessageDto(ChatMessageDto chatMessage) {
-    if (chatMessage.getMessage().equals(SERVER_DISCONNECTION_COMMAND)) {
-      ServerLogger.log("---Received disconnection command from server.---");
+  private void processSystemEvent(SystemEvent message) {
+    ServerLogger.log(message.getClientLog());
+    if (Objects.requireNonNull(message.getType()) == SystemEventType.DISCONNECTION_COMMAND) {
       disconnect();
     } else {
-      ChatLogger.log("%s: %s".formatted(chatMessage.getClient().getId(), chatMessage.getMessage()));
+      throw new IllegalCallerException("Server should never send system event of type: %s".formatted(message.getType()));
     }
+  }
+
+  private void processClientListResponse(ClientListResponse clientListResponse) {
+    clientListResponse.getClients().forEach(ServerLogger::log);
+  }
+
+  private void processClientMessage(RelayedChatMessage message) {
+    ChatLogger.log(message.getClientLog());
   }
 
   private synchronized void disconnect() {
-    ServerLogger.log("--- Disconnecting ---");
+    ServerLogger.log("Disconnecting");
     try {
       isConnected = false;
       objectInputStream.close();

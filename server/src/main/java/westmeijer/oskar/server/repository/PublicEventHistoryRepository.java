@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import westmeijer.oskar.shared.model.PublicEvent;
+import westmeijer.oskar.shared.model.history.HistoryEvent;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PublicEventHistoryRepository {
 
-  private final List<PublicEvent> history = new ArrayList<>();
+  private final List<HistoryEvent> history = new ArrayList<>();
 
   private static PublicEventHistoryRepository instance;
 
@@ -21,12 +21,12 @@ public class PublicEventHistoryRepository {
     return PublicEventHistoryRepository.instance;
   }
 
-  public void insertMessage(PublicEvent publicEvent) {
-    Objects.requireNonNull(publicEvent, "publicEvent is required");
-    history.add(publicEvent);
+  public void insertMessage(HistoryEvent historyEvent) {
+    Objects.requireNonNull(historyEvent, "publicEvent is required");
+    history.add(historyEvent);
   }
 
-  public List<PublicEvent> getHistory() {
+  public List<HistoryEvent> getHistory() {
     return List.copyOf(history);
   }
 

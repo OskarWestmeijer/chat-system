@@ -1,24 +1,25 @@
-package westmeijer.oskar.shared.model;
+package westmeijer.oskar.shared.model.history;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public abstract class PublicEvent implements Serializable {
+public abstract class HistoryEvent implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 1L;
 
   private final UUID id;
   private final Instant recordedAt;
-  private final ServerEvent event;
+  private final HistoryEventType event;
 
-  public PublicEvent(ServerEvent event) {
+  public HistoryEvent(HistoryEventType event) {
     this.id = UUID.randomUUID();
     this.recordedAt = Instant.now();
-    this.event = event;
+    this.event = Objects.requireNonNull(event, "event is required");
   }
 }

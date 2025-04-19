@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import westmeijer.oskar.server.client.ClientListener;
 
 @Slf4j
 public class ConnectionsListener {
