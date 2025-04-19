@@ -28,7 +28,7 @@ dependencies {
 }
 
 application {
-    mainClass = 'de.schlaumeijer.ServerMain'
+    mainClass = 'de.schlaumeijer.server.ServerMain'
 }
 
 tasks.named('shadowJar') {

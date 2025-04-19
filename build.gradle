@@ -33,3 +33,7 @@ subprojects {
 tasks.register('buildJars') {
     dependsOn ':client:shadowJar', ':server:shadowJar'
 }
+
+tasks.named('check') {
+    dependsOn tasks.named('buildJars')
+}

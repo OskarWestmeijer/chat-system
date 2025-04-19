@@ -22,7 +22,7 @@ dependencies {
 }
 
 application {
-    mainClass = 'de.schlaumeijer.ClientMain'
+    mainClass = 'de.schlaumeijer.client.ClientMain'
 }
 
 tasks.named('shadowJar') {
