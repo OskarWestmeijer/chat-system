@@ -1,4 +1,4 @@
-package westmeijer.oskar.shared.model.history;
+package westmeijer.oskar.server.repository.history;
 
 import java.io.Serial;
 import java.io.Serializable;

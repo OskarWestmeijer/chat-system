@@ -1,10 +1,9 @@
-package westmeijer.oskar.shared.model.system;
+package westmeijer.oskar.shared.model.response;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
 import lombok.Value;
-import westmeijer.oskar.shared.model.ClientLogger;
 
 @Value
 public class RelayedChatMessage implements Serializable, ClientLogger {

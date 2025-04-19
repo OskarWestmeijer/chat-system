@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import westmeijer.oskar.shared.model.history.HistoryEvent;
+import westmeijer.oskar.server.repository.history.HistoryEvent;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PublicEventHistoryRepository {

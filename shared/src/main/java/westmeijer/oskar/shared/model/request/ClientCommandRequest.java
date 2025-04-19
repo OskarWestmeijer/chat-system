@@ -1,4 +1,4 @@
-package westmeijer.oskar.shared.model.system;
+package westmeijer.oskar.shared.model.request;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -13,7 +13,7 @@ public class ClientCommandRequest implements Serializable {
   @Serial
   private static final long serialVersionUID = 555L;
 
-  SystemEventType eventType;
+  EventType eventType;
 
   Instant sendAt;
 

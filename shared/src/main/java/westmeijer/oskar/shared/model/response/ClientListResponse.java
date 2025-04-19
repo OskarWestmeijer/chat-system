@@ -1,4 +1,4 @@
-package westmeijer.oskar.shared.model.system;
+package westmeijer.oskar.shared.model.response;
 
 import java.io.Serial;
 import java.io.Serializable;

@@ -7,7 +7,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,19 +14,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import westmeijer.oskar.client.loggers.ChatLogger;
 import westmeijer.oskar.client.loggers.ServerLogger;
-import westmeijer.oskar.shared.model.system.ChatHistoryResponse;
-import westmeijer.oskar.shared.model.system.ClientChatRequest;
-import westmeijer.oskar.shared.model.system.ClientCommandRequest;
-import westmeijer.oskar.shared.model.system.ClientListResponse;
-import westmeijer.oskar.shared.model.system.RelayedChatMessage;
-import westmeijer.oskar.shared.model.system.SystemEvent;
-import westmeijer.oskar.shared.model.system.SystemEventType;
+import westmeijer.oskar.shared.model.request.ClientChatRequest;
+import westmeijer.oskar.shared.model.request.ClientCommandRequest;
+import westmeijer.oskar.shared.model.request.EventType;
+import westmeijer.oskar.shared.model.response.ChatHistoryResponse;
+import westmeijer.oskar.shared.model.response.ClientListResponse;
+import westmeijer.oskar.shared.model.response.RelayedChatMessage;
 
 @Slf4j
 @RequiredArgsConstructor
 public class ClientController {
-
-  private static final String SERVER_DISCONNECTION_COMMAND = "/goodbye";
 
   private boolean isConnected = false;
 
@@ -75,9 +71,9 @@ public class ClientController {
         String userInput = scanner.nextLine();
 
         switch (userInput) {
-          case "/clients" -> sendClientRequest(SystemEventType.LIST_CLIENTS);
-          case "/history" -> sendClientRequest(SystemEventType.CHAT_HISTORY);
-          case "/quit" -> sendClientRequest(SystemEventType.DISCONNECTION_REQUEST);
+          case "/clients" -> sendClientRequest(EventType.LIST_CLIENTS);
+          case "/history" -> sendClientRequest(EventType.CHAT_HISTORY);
+          case "/quit" -> disconnect();
           default -> sendClientChatRequest(userInput);
         }
       }
@@ -101,7 +97,7 @@ public class ClientController {
     }
   }
 
-  private void sendClientRequest(SystemEventType type) {
+  private void sendClientRequest(EventType type) {
     try {
       var event = ClientCommandRequest.builder()
           .eventType(type)
@@ -130,6 +126,7 @@ public class ClientController {
         }
       } catch (Exception e) {
         log.error("Exception thrown. Shutting down client.", e);
+        disconnect();
         throw new RuntimeException(e);
       }
     };
@@ -142,8 +139,6 @@ public class ClientController {
       processChatHistoryResponse((ChatHistoryResponse) message);
     } else if (message instanceof ClientListResponse) {
       processClientListResponse((ClientListResponse) message);
-    } else if (message instanceof SystemEvent) {
-      processSystemEvent((SystemEvent) message);
     } else if (message instanceof RelayedChatMessage) {
       processClientMessage((RelayedChatMessage) message);
     } else {
@@ -153,15 +148,6 @@ public class ClientController {
 
   private void processChatHistoryResponse(ChatHistoryResponse message) {
     message.getMessageHistory().forEach(ServerLogger::log);
-  }
-
-  private void processSystemEvent(SystemEvent message) {
-    ServerLogger.log(message.getClientLog());
-    if (Objects.requireNonNull(message.getType()) == SystemEventType.DISCONNECTION_COMMAND) {
-      disconnect();
-    } else {
-      throw new IllegalCallerException("Server should never send system event of type: %s".formatted(message.getType()));
-    }
   }
 
   private void processClientListResponse(ClientListResponse clientListResponse) {

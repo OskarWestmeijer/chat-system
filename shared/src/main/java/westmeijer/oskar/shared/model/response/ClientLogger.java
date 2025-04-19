@@ -1,4 +1,4 @@
-package westmeijer.oskar.shared.model;
+package westmeijer.oskar.shared.model.response;
 
 public interface ClientLogger {
 

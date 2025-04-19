@@ -1,4 +1,4 @@
-package westmeijer.oskar.shared.model;
+package westmeijer.oskar.server.repository.history;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -8,6 +8,7 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
+import westmeijer.oskar.shared.model.response.ClientLogger;
 
 @Value
 @Builder

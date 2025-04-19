@@ -3,7 +3,7 @@ package westmeijer.oskar.server.repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import westmeijer.oskar.shared.model.ClientDetails;
+import westmeijer.oskar.server.repository.history.ClientDetails;
 
 public class ClientConnectionRepository {
 

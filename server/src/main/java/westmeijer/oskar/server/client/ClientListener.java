@@ -1,26 +1,24 @@
 package westmeijer.oskar.server.client;
 
-import static westmeijer.oskar.shared.model.system.SystemEventType.DISCONNECTION_COMMAND;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.time.Instant;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import westmeijer.oskar.server.repository.PublicEventHistoryRepository;
+import westmeijer.oskar.server.repository.history.ClientActivity;
+import westmeijer.oskar.server.repository.history.ClientDetails;
+import westmeijer.oskar.server.repository.history.ClientMessage;
+import westmeijer.oskar.server.repository.history.HistoryEventType;
 import westmeijer.oskar.server.service.ConnectionsListener;
-import westmeijer.oskar.shared.model.ClientDetails;
-import westmeijer.oskar.shared.model.history.ClientActivity;
-import westmeijer.oskar.shared.model.history.ClientMessage;
-import westmeijer.oskar.shared.model.history.HistoryEvent;
-import westmeijer.oskar.shared.model.history.HistoryEventType;
-import westmeijer.oskar.shared.model.system.ClientChatRequest;
-import westmeijer.oskar.shared.model.system.RelayedChatMessage;
-import westmeijer.oskar.shared.model.system.SystemEvent;
+import westmeijer.oskar.shared.model.request.ClientChatRequest;
+import westmeijer.oskar.shared.model.request.ClientCommandRequest;
+import westmeijer.oskar.shared.model.response.ChatHistoryResponse;
+import westmeijer.oskar.shared.model.response.ClientListResponse;
+import westmeijer.oskar.shared.model.response.RelayedChatMessage;
 
 @Slf4j
 public class ClientListener implements Runnable {
@@ -71,8 +69,8 @@ public class ClientListener implements Runnable {
   private void processMessage(Object message) {
     if (message instanceof ClientChatRequest) {
       processClientChatRequest((ClientChatRequest) message);
-    } else if (message instanceof SystemEvent) {
-      processSystemEvent((SystemEvent) message);
+    } else if (message instanceof ClientCommandRequest) {
+      processClientCommandRequest((ClientCommandRequest) message);
     } else {
       throw new IllegalArgumentException("Did not find processing path for input. %s".formatted(message));
     }
@@ -85,25 +83,10 @@ public class ClientListener implements Runnable {
     relayMessageToOtherClients(relayedMessage);
   }
 
-  private void processSystemEvent(SystemEvent systemEvent) {
-    switch (systemEvent.getType()) {
+  private void processClientCommandRequest(ClientCommandRequest request) {
+    switch (request.getEventType()) {
       case LIST_CLIENTS -> sendClientList();
       case CHAT_HISTORY -> sendChatHistory();
-      case DISCONNECTION_REQUEST -> invokeClientDisconnect();
-      case DISCONNECTION_COMMAND -> clientInvokedUngracefulDisconnect();
-    }
-  }
-
-  private void invokeClientDisconnect() {
-    try {
-      var systemEvent = SystemEvent.builder()
-          .type(DISCONNECTION_COMMAND)
-          .recordedAt(Instant.now());
-      objectOutputStream.writeObject(systemEvent);
-      objectOutputStream.flush();
-      disconnect();
-    } catch (IOException e) {
-      log.error("Exception thrown, while relaying message to client.", e);
     }
   }
 
@@ -123,32 +106,29 @@ public class ClientListener implements Runnable {
   }
 
   private void sendChatHistory() {
+    // TODO: fix evaluation of history type
+    var history = publicEventHistoryRepository.getHistory().stream()
+        .map(historyEvent -> "%s: %s".formatted(historyEvent.getId(), historyEvent.getEvent()))
+        .toList();
     try {
-      for (HistoryEvent historyEvent : publicEventHistoryRepository.getHistory()) {
-        // TODO: use history response model here
-        objectOutputStream.writeObject(historyEvent);
-        objectOutputStream.flush();
-      }
+      objectOutputStream.writeObject(new ChatHistoryResponse(history));
+      objectOutputStream.flush();
     } catch (IOException e) {
       log.error("Exception thrown, while sharing chat history.", e);
     }
   }
 
   private void sendClientList() {
+    // TODO: make nicer
+    var clients = ConnectionsListener.CONNECTED_CLIENT_CONTROLLERS.stream()
+        .map(client -> client.getClientDetails().getClientLog())
+        .toList();
     try {
-      for (ClientListener client : ConnectionsListener.CONNECTED_CLIENT_CONTROLLERS) {
-        log.info("Writing client info. client: {}", client.getClientDetails());
-        objectOutputStream.writeObject(client.getClientDetails());
-        objectOutputStream.flush();
-      }
+      objectOutputStream.writeObject(new ClientListResponse(clients));
+      objectOutputStream.flush();
     } catch (IOException e) {
       log.error("Exception thrown, while sharing chat history.", e);
     }
-  }
-
-  private void clientInvokedUngracefulDisconnect() {
-    log.info("Client invoked ungraceful disconnect: {}", clientDetails);
-    disconnect();
   }
 
   private void disconnect() {

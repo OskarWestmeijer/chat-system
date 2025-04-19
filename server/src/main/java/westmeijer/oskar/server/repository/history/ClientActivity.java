@@ -1,12 +1,11 @@
-package westmeijer.oskar.shared.model.history;
+package westmeijer.oskar.server.repository.history;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import westmeijer.oskar.shared.model.ClientDetails;
-import westmeijer.oskar.shared.model.ClientLogger;
+import westmeijer.oskar.shared.model.response.ClientLogger;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
