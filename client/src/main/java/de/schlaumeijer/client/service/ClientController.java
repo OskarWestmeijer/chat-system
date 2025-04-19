@@ -1,9 +1,7 @@
-package de.schlaumeijer.service;
+package de.schlaumeijer.client.service;
 
-import de.schlaumeijer.service.loggers.ChatLogger;
-import de.schlaumeijer.service.loggers.ServerLogger;
-import de.schlaumeijer.service.model.ChatMessageDto;
-import de.schlaumeijer.service.model.ClientConnectionDto;
+import de.schlaumeijer.client.loggers.ChatLogger;
+import de.schlaumeijer.client.loggers.ServerLogger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -15,6 +13,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import westmeijer.oskar.shared.model.ChatMessageDto;
+import westmeijer.oskar.shared.model.ClientConnectionDto;
 
 @Slf4j
 @RequiredArgsConstructor

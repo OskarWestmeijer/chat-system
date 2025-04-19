@@ -1,6 +1,6 @@
-package de.schlaumeijer;
+package de.schlaumeijer.client;
 
-import de.schlaumeijer.service.ClientController;
+import de.schlaumeijer.client.service.ClientController;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

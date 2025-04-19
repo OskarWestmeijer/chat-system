@@ -1,9 +1,7 @@
-package de.schlaumeijer.service;
+package de.schlaumeijer.server.service;
 
-import de.schlaumeijer.repository.ChatMessageRepository;
-import de.schlaumeijer.repository.ChatMessageRepositoryImpl;
-import de.schlaumeijer.service.model.ChatMessageDto;
-import de.schlaumeijer.service.model.ClientConnectionDto;
+import de.schlaumeijer.server.repository.ChatMessageRepository;
+import de.schlaumeijer.server.repository.ChatMessageRepositoryImpl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -12,6 +10,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import westmeijer.oskar.shared.model.ChatMessageDto;
+import westmeijer.oskar.shared.model.ClientConnectionDto;
 
 @Slf4j
 public class ClientListener implements Runnable {
