@@ -1,0 +1,13 @@
+plugins {
+    id 'jacoco-report-aggregation'
+}
+
+dependencies {
+    implementation project(':client')
+    implementation project(':server')
+    implementation project(':shared')
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
+}

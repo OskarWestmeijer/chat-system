@@ -1,0 +1,31 @@
+name: backend-build-and-test
+description: 'backend-build-and-test'
+inputs:
+  code-cov:
+    description: code-cov
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+        cache: gradle
+
+    - shell: bash
+      run: |
+        chmod +x gradlew 
+        ./gradlew clean check
+
+    - name: Upload JaCoCo coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-report
+        path: coverage/build/reports/jacoco/
+        retention-days: 1
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
+      with:
+        token: ${{ inputs.code-cov }}
