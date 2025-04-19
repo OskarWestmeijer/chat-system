@@ -1,7 +1,7 @@
-package de.schlaumeijer.server.service;
+package westmeijer.oskar.server.service;
 
-import de.schlaumeijer.server.repository.ChatMessageRepository;
-import de.schlaumeijer.server.repository.ChatMessageRepositoryImpl;
+import westmeijer.oskar.server.repository.ChatMessageRepository;
+import westmeijer.oskar.server.repository.ChatMessageRepositoryImpl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;

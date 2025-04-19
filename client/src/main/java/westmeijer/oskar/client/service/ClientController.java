@@ -1,7 +1,7 @@
-package de.schlaumeijer.client.service;
+package westmeijer.oskar.client.service;
 
-import de.schlaumeijer.client.loggers.ChatLogger;
-import de.schlaumeijer.client.loggers.ServerLogger;
+import westmeijer.oskar.client.loggers.ChatLogger;
+import westmeijer.oskar.client.loggers.ServerLogger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;

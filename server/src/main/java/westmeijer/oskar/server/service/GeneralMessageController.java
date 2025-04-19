@@ -1,4 +1,4 @@
-package de.schlaumeijer.server.service;
+package westmeijer.oskar.server.service;
 
 import lombok.extern.slf4j.Slf4j;
 
