@@ -1,4 +1,4 @@
-package de.schlaumeijer.server.repository;
+package westmeijer.oskar.server.repository;
 
 import java.util.List;
 import westmeijer.oskar.shared.model.ClientConnectionDto;

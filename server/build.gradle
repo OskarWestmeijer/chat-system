@@ -3,32 +3,12 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
-group 'westmeijer.oskar'
-version '1.0'
-
-sourceCompatibility = 21
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation(project(':shared'))
-
-    implementation 'org.slf4j:slf4j-api:2.0.17'
-    implementation 'ch.qos.logback:logback-classic:1.5.18'
-
-    compileOnly("org.projectlombok:lombok:1.18.38")
-    annotationProcessor("org.projectlombok:lombok:1.18.38")
-
-    testCompileOnly("org.projectlombok:lombok:1.18.38")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
-
-    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
 }
 
 application {
-    mainClass = 'de.schlaumeijer.server.ServerMain'
+    mainClass = 'westmeijer.oskar.server.ServerMain'
 }
 
 tasks.named('shadowJar') {

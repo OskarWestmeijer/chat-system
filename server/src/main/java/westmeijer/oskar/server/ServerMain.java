@@ -1,6 +1,6 @@
-package de.schlaumeijer.server;
+package westmeijer.oskar.server;
 
-import de.schlaumeijer.server.service.ConnectionsListener;
+import westmeijer.oskar.server.service.ConnectionsListener;
 import java.io.IOException;
 
 public class ServerMain {

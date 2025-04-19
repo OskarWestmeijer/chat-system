@@ -1,4 +1,4 @@
-package de.schlaumeijer.server.repository;
+package westmeijer.oskar.server.repository;
 
 import java.util.ArrayList;
 import java.util.List;

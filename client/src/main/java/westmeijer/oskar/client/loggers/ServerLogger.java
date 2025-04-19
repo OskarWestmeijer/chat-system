@@ -1,4 +1,4 @@
-package de.schlaumeijer.client.loggers;
+package westmeijer.oskar.client.loggers;
 
 import lombok.extern.slf4j.Slf4j;
 

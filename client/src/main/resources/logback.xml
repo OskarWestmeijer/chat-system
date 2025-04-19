@@ -33,11 +33,11 @@
     <appender-ref ref="STDOUT"/>
   </root>
 
-  <logger name="de.schlaumeijer.client.loggers.ServerLogger" level="info" additivity="false">
+  <logger name="westmeijer.oskar.client.loggers.ServerLogger" level="info" additivity="false">
     <appender-ref ref="SERVER_LOGGER"/>
   </logger>
 
-  <logger name="de.schlaumeijer.client.loggers.ChatLogger" level="info" additivity="false">
+  <logger name="westmeijer.oskar.client.loggers.ChatLogger" level="info" additivity="false">
     <appender-ref ref="CHAT_LOGGER"/>
   </logger>
 
