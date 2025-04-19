@@ -4,6 +4,7 @@ plugins {
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'jacoco'
 
     group = 'westmeijer.oskar'
     version = '1.0'
@@ -31,6 +32,16 @@ subprojects {
 
     test {
         useJUnitPlatform()
+        finalizedBy jacocoTestReport
+    }
+
+    jacocoTestReport {
+        dependsOn test
+        reports {
+            xml.required.set(true)
+            csv.required.set(false)
+            html.required.set(true)
+        }
     }
 }
 
