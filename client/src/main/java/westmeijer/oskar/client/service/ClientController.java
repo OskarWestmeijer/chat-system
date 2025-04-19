@@ -1,7 +1,5 @@
 package westmeijer.oskar.client.service;
 
-import westmeijer.oskar.client.loggers.ChatLogger;
-import westmeijer.oskar.client.loggers.ServerLogger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -13,6 +11,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import westmeijer.oskar.client.loggers.ChatLogger;
+import westmeijer.oskar.client.loggers.ServerLogger;
 import westmeijer.oskar.shared.model.ChatMessageDto;
 import westmeijer.oskar.shared.model.ClientConnectionDto;
 
@@ -66,8 +66,9 @@ public class ClientController {
       ServerLogger.log("--- Waiting for input ---");
       while (isConnected) {
         String userInput = scanner.nextLine();
-        ChatMessageDto chatMessageDto = new ChatMessageDto();
-        chatMessageDto.setMessage(userInput);
+        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
+            .message(userInput)
+            .build();
         objectOutputStream.writeObject(chatMessageDto);
         objectOutputStream.flush();
 
@@ -115,12 +116,12 @@ public class ClientController {
     ServerLogger.log(clientConnectionDto.toString());
   }
 
-  private void processChatMessageDto(ChatMessageDto chatMessageDto) {
-    if (chatMessageDto.getMessage().equals(SERVER_DISCONNECTION_COMMAND)) {
+  private void processChatMessageDto(ChatMessageDto chatMessage) {
+    if (chatMessage.getMessage().equals(SERVER_DISCONNECTION_COMMAND)) {
       ServerLogger.log("---Received disconnection command from server.---");
       disconnect();
     } else {
-      ChatLogger.log("%s: %s".formatted(chatMessageDto.getClientConnectionDto().getId(), chatMessageDto.getMessage()));
+      ChatLogger.log("%s: %s".formatted(chatMessage.getClient().getId(), chatMessage.getMessage()));
     }
   }
 

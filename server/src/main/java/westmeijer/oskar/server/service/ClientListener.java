@@ -1,7 +1,5 @@
 package westmeijer.oskar.server.service;
 
-import westmeijer.oskar.server.repository.ChatMessageRepository;
-import westmeijer.oskar.server.repository.ChatMessageRepositoryImpl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -10,13 +8,15 @@ import java.io.OutputStream;
 import java.net.Socket;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import westmeijer.oskar.server.repository.PublicEventHistoryRepository;
 import westmeijer.oskar.shared.model.ChatMessageDto;
 import westmeijer.oskar.shared.model.ClientConnectionDto;
+import westmeijer.oskar.shared.model.PublicEvent;
 
 @Slf4j
 public class ClientListener implements Runnable {
 
-  private final ChatMessageRepository chatMessageRepository;
+  private final PublicEventHistoryRepository publicEventHistoryRepository;
   private final Socket socket;
   private final InputStream inputStream;
   private final ObjectInputStream objectInputStream;
@@ -36,7 +36,7 @@ public class ClientListener implements Runnable {
       this.objectOutputStream.flush();
       this.inputStream = socket.getInputStream();
       this.objectInputStream = new ObjectInputStream(inputStream);
-      this.chatMessageRepository = ChatMessageRepositoryImpl.getInstance();
+      this.publicEventHistoryRepository = PublicEventHistoryRepository.getInstance();
       this.clientConnectionDto = ClientConnectionDto.from(socket.getInetAddress().getHostAddress());
     } catch (IOException e) {
       log.error("Exception thrown.", e);
@@ -86,10 +86,12 @@ public class ClientListener implements Runnable {
     }
   }
 
-  private void processChatMessageDto(ChatMessageDto chatMessageDto) {
-    chatMessageDto.setClientConnectionDto(clientConnectionDto);
+  private void processChatMessageDto(ChatMessageDto receivedMessage) {
+    var enrichedMessage = receivedMessage.toBuilder()
+        .client(clientConnectionDto)
+        .build();
     // TODO: use modern switch, use enum for commands.
-    switch (chatMessageDto.getMessage()) {
+    switch (enrichedMessage.getMessage()) {
       case "/quit":
         log.info("Recognized message as disconnection command.");
         disconnect();
@@ -100,15 +102,15 @@ public class ClientListener implements Runnable {
         break;
       case "/history":
         log.info("Recognized message as list messages command.");
-        listMessages();
+        sendHistory();
         break;
       default:
-        relayMessageToOtherClients(chatMessageDto);
+        relayMessageToOtherClients(enrichedMessage);
     }
   }
 
   private void relayMessageToOtherClients(ChatMessageDto chatMessageDto) {
-    chatMessageRepository.insertMessage(chatMessageDto);
+    publicEventHistoryRepository.insertMessage(chatMessageDto);
     ConnectionsListener.CONNECTED_CLIENT_CONTROLLERS.stream()
         .filter(client -> client != this)
         .forEach(client -> relayMessage(client, chatMessageDto));
@@ -123,10 +125,10 @@ public class ClientListener implements Runnable {
     }
   }
 
-  private void listMessages() {
+  private void sendHistory() {
     try {
-      for (ChatMessageDto chatMessageDto : chatMessageRepository.readAllMessages()) {
-        objectOutputStream.writeObject(chatMessageDto);
+      for (PublicEvent publicEvent : publicEventHistoryRepository.getHistory()) {
+        objectOutputStream.writeObject(publicEvent);
         objectOutputStream.flush();
       }
     } catch (IOException e) {

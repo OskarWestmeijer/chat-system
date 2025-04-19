@@ -1,14 +1,25 @@
 package westmeijer.oskar.server.repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import westmeijer.oskar.shared.model.ClientConnectionDto;
 
-public interface ClientConnectionRepository {
+public class ClientConnectionRepository {
 
-  void insertConntection(ClientConnectionDto clientConnectionDto);
+  private final List<ClientConnectionDto> clientConnections = new ArrayList<>();
 
-  void updateDissconect(ClientConnectionDto clientConnectionDto);
+  public void insertConntection(ClientConnectionDto clientConnectionDto) {
+    Objects.requireNonNull(clientConnectionDto, "clientConnection is required");
+    clientConnections.add(clientConnectionDto);
+  }
 
-  List<ClientConnectionDto> getClients();
+  public void updateDissconect(ClientConnectionDto clientConnectionDto) {
+    throw new RuntimeException("Disconnecting not yet implemented");
+  }
+
+  public List<ClientConnectionDto> getClients() {
+    return List.copyOf(clientConnections);
+  }
 
 }

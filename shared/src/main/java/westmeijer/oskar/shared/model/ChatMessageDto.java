@@ -2,30 +2,26 @@ package westmeijer.oskar.shared.model;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class ChatMessageDto implements Serializable {
+@Value
+@Builder(toBuilder = true)
+@EqualsAndHashCode(callSuper = true)
+public class ChatMessageDto extends PublicEvent implements Serializable {
 
   @Serial
   private static final long serialVersionUID = 15071992L;
 
-  private UUID uuid;
+  String message;
 
-  private String senderIp;
+  ClientConnectionDto client;
 
-  private String senderName;
-
-  private String message;
-
-  private Date date;
-
-  private ClientConnectionDto clientConnectionDto;
+  public ChatMessageDto(String message, ClientConnectionDto client) {
+    super(ServerEvent.CHAT_MESSAGE_RECEIVED);
+    this.message = message;
+    this.client = client;
+  }
 
 }
