@@ -1,9 +1,9 @@
-package de.schlaumeijer.repository;
+package de.schlaumeijer.server.repository;
 
-import de.schlaumeijer.service.model.ClientConnectionDto;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import westmeijer.oskar.shared.model.ClientConnectionDto;
 
 public class ClientConnectionRepositoryImpl implements ClientConnectionRepository {
 

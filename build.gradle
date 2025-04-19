@@ -1,7 +1,5 @@
 plugins {
     id 'java'
-    id 'application'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group 'westmeijer.oskar'
@@ -13,25 +11,25 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation 'org.slf4j:slf4j-api:2.0.17'
-    implementation 'ch.qos.logback:logback-classic:1.5.18'
+subprojects {
+    apply plugin: 'java'
 
-    compileOnly("org.projectlombok:lombok:1.18.38")
-    annotationProcessor("org.projectlombok:lombok:1.18.38")
+    group = 'westmeijer.oskar'
+    version = '1.1'
 
-    testCompileOnly("org.projectlombok:lombok:1.18.38")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
-
-    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
-}
-
-application {
-    mainClass = 'de.schlaumeijer.Main'
-}
-
-tasks.named('shadowJar') {
-    manifest {
-        attributes 'Main-Class': application.mainClass.get()
+    repositories {
+        mavenCentral()
     }
+
+    dependencies {
+        compileOnly("org.projectlombok:lombok:1.18.38")
+        annotationProcessor("org.projectlombok:lombok:1.18.38")
+
+        testCompileOnly("org.projectlombok:lombok:1.18.38")
+        testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
+    }
+}
+
+tasks.register('buildJars') {
+    dependsOn ':client:shadowJar', ':server:shadowJar'
 }

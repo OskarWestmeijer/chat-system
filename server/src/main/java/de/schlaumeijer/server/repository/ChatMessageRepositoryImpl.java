@@ -1,11 +1,11 @@
-package de.schlaumeijer.repository;
+package de.schlaumeijer.server.repository;
 
-import de.schlaumeijer.service.model.ChatMessageDto;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import westmeijer.oskar.shared.model.ChatMessageDto;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChatMessageRepositoryImpl implements ChatMessageRepository {

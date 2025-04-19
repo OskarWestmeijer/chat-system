@@ -1,4 +1,4 @@
-package de.schlaumeijer.service;
+package de.schlaumeijer.server.service;
 
 import java.io.IOException;
 import java.net.ServerSocket;

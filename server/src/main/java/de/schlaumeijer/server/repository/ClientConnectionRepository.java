@@ -1,7 +1,7 @@
-package de.schlaumeijer.repository;
+package de.schlaumeijer.server.repository;
 
-import de.schlaumeijer.service.model.ClientConnectionDto;
 import java.util.List;
+import westmeijer.oskar.shared.model.ClientConnectionDto;
 
 public interface ClientConnectionRepository {
 

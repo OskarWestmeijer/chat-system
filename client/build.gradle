@@ -1,0 +1,35 @@
+plugins {
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group 'de.schlaumeijer'
+version '1.0'
+
+sourceCompatibility = 21
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(project(':shared'))
+
+    implementation 'org.slf4j:slf4j-api:2.0.17'
+    implementation 'ch.qos.logback:logback-classic:1.5.18'
+
+    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
+}
+
+application {
+    mainClass = 'de.schlaumeijer.ClientMain'
+}
+
+tasks.named('shadowJar') {
+    manifest {
+        archiveBaseName.set("chat-system-client")
+        archiveClassifier.set("")
+        archiveVersion.set("")
+        attributes 'Main-Class': application.mainClass.get()
+    }
+}
