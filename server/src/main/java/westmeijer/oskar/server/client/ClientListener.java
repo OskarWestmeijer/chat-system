@@ -62,6 +62,9 @@ public class ClientListener implements Runnable {
       log.info("Waiting for messages from client.");
       while (isConnected && (message = objectInputStream.readObject()) != null) {
         log.info("Processing message: {}", message);
+        // TODO
+        // create message processing unit
+        // create universal output stream unit
         processMessage(message);
       }
     } catch (Exception e) {

@@ -37,6 +37,15 @@ public class ConnectionsListener {
   }
 
   private void newClientConnection(Socket socket) {
+
+    /*
+    TODO:
+    - create client
+    - add client to known connection pool
+    - historize client joined event
+    - relay client joined event
+     */
+
     log.info("Client joined chat. clientIp: {}", socket.getInetAddress());
     ClientListener clientListener = new ClientListener(socket);
     var clientDetails = clientListener.getClientDetails();
