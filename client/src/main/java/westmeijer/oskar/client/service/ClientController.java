@@ -20,6 +20,7 @@ import westmeijer.oskar.shared.model.request.EventType;
 import westmeijer.oskar.shared.model.response.ChatHistoryResponse;
 import westmeijer.oskar.shared.model.response.ClientListResponse;
 import westmeijer.oskar.shared.model.response.RelayedChatMessage;
+import westmeijer.oskar.shared.model.response.RelayedClientActivity;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -135,14 +136,12 @@ public class ClientController {
 
   private void processReceivedMessage(Object message) {
     log.trace("Received message: {}", message);
-    if (message instanceof ChatHistoryResponse) {
-      processChatHistoryResponse((ChatHistoryResponse) message);
-    } else if (message instanceof ClientListResponse) {
-      processClientListResponse((ClientListResponse) message);
-    } else if (message instanceof RelayedChatMessage) {
-      processClientMessage((RelayedChatMessage) message);
-    } else {
-      throw new RuntimeException("Could not process received message. %s".formatted(message));
+    switch (message) {
+      case ChatHistoryResponse chatHistoryResponse -> processChatHistoryResponse(chatHistoryResponse);
+      case ClientListResponse clientListResponse -> processClientListResponse(clientListResponse);
+      case RelayedChatMessage relayedChatMessage -> processClientMessage(relayedChatMessage);
+      case RelayedClientActivity relayedClientActivity -> processClientActivity(relayedClientActivity);
+      default -> throw new RuntimeException("Could not process received message. %s".formatted(message));
     }
   }
 
@@ -156,6 +155,10 @@ public class ClientController {
 
   private void processClientMessage(RelayedChatMessage message) {
     ChatLogger.log(message.getClientLog());
+  }
+
+  private void processClientActivity(RelayedClientActivity message) {
+    ServerLogger.log(message.getClientLog());
   }
 
   private synchronized void disconnect() {

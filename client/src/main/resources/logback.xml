@@ -14,7 +14,7 @@
       <onMismatch>NEUTRAL</onMismatch>
     </filter>
     <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-      <pattern>%d{HH:mm:ss} %red(%msg%n)</pattern>
+      <pattern>%red(%msg%n)</pattern>
     </encoder>
   </appender>
 

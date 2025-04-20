@@ -6,6 +6,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import westmeijer.oskar.server.repository.PublicEventHistoryRepository;
@@ -19,6 +21,8 @@ import westmeijer.oskar.shared.model.request.ClientCommandRequest;
 import westmeijer.oskar.shared.model.response.ChatHistoryResponse;
 import westmeijer.oskar.shared.model.response.ClientListResponse;
 import westmeijer.oskar.shared.model.response.RelayedChatMessage;
+import westmeijer.oskar.shared.model.response.RelayedClientActivity;
+import westmeijer.oskar.shared.model.response.RelayedClientActivity.ACTIVITY_TYPE;
 
 @Slf4j
 public class ClientListener implements Runnable {
@@ -96,7 +100,7 @@ public class ClientListener implements Runnable {
         .forEach(client -> relayMessage(client, message));
   }
 
-  private void relayMessage(ClientListener client, RelayedChatMessage message) {
+  public static void relayMessage(ClientListener client, Object message) {
     try {
       client.getObjectOutputStream().writeObject(message);
       client.getObjectOutputStream().flush();
@@ -108,7 +112,8 @@ public class ClientListener implements Runnable {
   private void sendChatHistory() {
     // TODO: fix evaluation of history type
     var history = publicEventHistoryRepository.getHistory().stream()
-        .map(historyEvent -> "%s: %s".formatted(historyEvent.getId(), historyEvent.getEvent()))
+        .map(historyEvent -> "%s %s: %s".formatted(historyEvent.getRecordedAt().truncatedTo(ChronoUnit.SECONDS), historyEvent.getId(),
+            historyEvent.getEvent()))
         .toList();
     try {
       objectOutputStream.writeObject(new ChatHistoryResponse(history));
@@ -142,6 +147,9 @@ public class ClientListener implements Runnable {
       ConnectionsListener.CONNECTED_CLIENT_CONTROLLERS.remove(this);
       var clientActivity = new ClientActivity(HistoryEventType.CLIENT_DISCONNECTED, clientDetails);
       publicEventHistoryRepository.insertMessage(clientActivity);
+
+      var relayedClientActivity = new RelayedClientActivity(this.clientDetails.getId(), ACTIVITY_TYPE.DISCONNECTED, Instant.now());
+      ConnectionsListener.CONNECTED_CLIENT_CONTROLLERS.forEach(c -> ClientListener.relayMessage(c, relayedClientActivity));
       log.info("Disconnecting client. clients left: {}, disconnected client: {}", ConnectionsListener.CONNECTED_CLIENT_CONTROLLERS.size(),
           clientDetails);
     } catch (Exception e) {

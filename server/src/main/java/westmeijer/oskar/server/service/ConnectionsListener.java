@@ -10,6 +10,8 @@ import westmeijer.oskar.server.client.ClientListener;
 import westmeijer.oskar.server.repository.PublicEventHistoryRepository;
 import westmeijer.oskar.server.repository.history.ClientActivity;
 import westmeijer.oskar.server.repository.history.HistoryEventType;
+import westmeijer.oskar.shared.model.response.RelayedClientActivity;
+import westmeijer.oskar.shared.model.response.RelayedClientActivity.ACTIVITY_TYPE;
 
 @Slf4j
 public class ConnectionsListener {
@@ -37,11 +39,14 @@ public class ConnectionsListener {
   private void newClientConnection(Socket socket) {
     log.info("Client joined chat. clientIp: {}", socket.getInetAddress());
     ClientListener clientListener = new ClientListener(socket);
-    // TODO: think about management over thread pool.
+    var clientDetails = clientListener.getClientDetails();
+    var relayedActivity = new RelayedClientActivity(clientDetails.getId(), ACTIVITY_TYPE.CONNECTED, clientDetails.getConnectedAt());
+    var historizedActivity = new ClientActivity(HistoryEventType.CLIENT_CONNECTED, clientDetails);
+    CONNECTED_CLIENT_CONTROLLERS
+        .forEach(client -> ClientListener.relayMessage(client, relayedActivity));
     CONNECTED_CLIENT_CONTROLLERS.add(clientListener);
-    var activity = new ClientActivity(HistoryEventType.CLIENT_CONNECTED, clientListener.getClientDetails());
-    PublicEventHistoryRepository.getInstance().insertMessage(activity);
-    // TODO: relay client activity
+    PublicEventHistoryRepository.getInstance().insertMessage(historizedActivity);
+    // TODO: think about management over thread pool.
     Thread thread = new Thread(clientListener);
     thread.start();
     log.info("Connected clients count: {}", CONNECTED_CLIENT_CONTROLLERS.size());
