@@ -21,6 +21,7 @@ import westmeijer.oskar.shared.model.response.ChatHistoryResponse;
 import westmeijer.oskar.shared.model.response.ClientListResponse;
 import westmeijer.oskar.shared.model.response.RelayedChatMessage;
 import westmeijer.oskar.shared.model.response.RelayedClientActivity;
+import westmeijer.oskar.shared.model.response.ServerMessage;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -120,10 +121,8 @@ public class ClientController {
       Thread.currentThread().setName("Listener");
       try {
         while (isConnected) {
-          Object serverMessage = objectInputStream.readObject();
-          if (serverMessage != null) {
-            processReceivedMessage(serverMessage);
-          }
+          ServerMessage serverMessage = (ServerMessage) objectInputStream.readObject();
+          processReceivedMessage(serverMessage);
         }
       } catch (Exception e) {
         log.error("Exception thrown. Shutting down client.", e);
@@ -134,7 +133,7 @@ public class ClientController {
     executorService.submit(listenForMessagesTask);
   }
 
-  private void processReceivedMessage(Object message) {
+  private void processReceivedMessage(ServerMessage message) {
     log.trace("Received message: {}", message);
     switch (message) {
       case ChatHistoryResponse chatHistoryResponse -> processChatHistoryResponse(chatHistoryResponse);
@@ -146,11 +145,17 @@ public class ClientController {
   }
 
   private void processChatHistoryResponse(ChatHistoryResponse message) {
+    ServerLogger.log("-- START OF HISTORY --");
     message.getMessageHistory().forEach(ServerLogger::log);
+    ServerLogger.log("-- END OF HISTORY --");
+    ServerLogger.log("");
   }
 
   private void processClientListResponse(ClientListResponse clientListResponse) {
+    ServerLogger.log("-- START OF CLIENT LIST --");
     clientListResponse.getClients().forEach(ServerLogger::log);
+    ServerLogger.log("-- END OF CLIENT LIST --");
+    ServerLogger.log("");
   }
 
   private void processClientMessage(RelayedChatMessage message) {

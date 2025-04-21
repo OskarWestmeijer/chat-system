@@ -1,33 +1,35 @@
 package westmeijer.oskar.server.client;
 
-import java.io.IOException;
+import java.io.EOFException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.util.List;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import westmeijer.oskar.server.repository.PublicEventHistoryRepository;
-import westmeijer.oskar.server.repository.history.ClientActivity;
-import westmeijer.oskar.server.repository.history.ClientDetails;
-import westmeijer.oskar.server.repository.history.ClientMessage;
-import westmeijer.oskar.server.repository.history.HistoryEventType;
-import westmeijer.oskar.server.service.ConnectionsListener;
+import westmeijer.oskar.server.service.ClientService;
+import westmeijer.oskar.server.service.EventNotificationService;
+import westmeijer.oskar.server.service.HistorizedEventService;
+import westmeijer.oskar.server.service.model.ClientActivity;
+import westmeijer.oskar.server.service.model.ClientDetails;
+import westmeijer.oskar.server.service.model.ClientMessage;
+import westmeijer.oskar.server.service.model.HistorizedEventType;
 import westmeijer.oskar.shared.model.request.ClientChatRequest;
 import westmeijer.oskar.shared.model.request.ClientCommandRequest;
 import westmeijer.oskar.shared.model.response.ChatHistoryResponse;
 import westmeijer.oskar.shared.model.response.ClientListResponse;
-import westmeijer.oskar.shared.model.response.RelayedChatMessage;
-import westmeijer.oskar.shared.model.response.RelayedClientActivity;
-import westmeijer.oskar.shared.model.response.RelayedClientActivity.ACTIVITY_TYPE;
+import westmeijer.oskar.shared.model.response.RelayedClientActivity.ActivityType;
 
 @Slf4j
+@EqualsAndHashCode
 public class ClientListener implements Runnable {
 
-  private final PublicEventHistoryRepository publicEventHistoryRepository;
+  private final HistorizedEventService historizedEventService;
+  private final ClientService clientService;
+
   private final Socket socket;
   private final InputStream inputStream;
   private final ObjectInputStream objectInputStream;
@@ -39,7 +41,7 @@ public class ClientListener implements Runnable {
   @Getter
   private final ClientDetails clientDetails;
 
-  public ClientListener(Socket socket) {
+  public ClientListener(Socket socket, ClientDetails clientDetails) {
     try {
       this.socket = socket;
       this.outputStream = socket.getOutputStream();
@@ -47,8 +49,9 @@ public class ClientListener implements Runnable {
       this.objectOutputStream.flush();
       this.inputStream = socket.getInputStream();
       this.objectInputStream = new ObjectInputStream(inputStream);
-      this.publicEventHistoryRepository = PublicEventHistoryRepository.getInstance();
-      this.clientDetails = ClientDetails.from(socket.getInetAddress().getHostAddress());
+      this.historizedEventService = HistorizedEventService.getInstance();
+      this.clientService = ClientService.getInstance();
+      this.clientDetails = clientDetails;
     } catch (Exception e) {
       log.error("Exception thrown.", e);
       throw new RuntimeException(e);
@@ -59,14 +62,15 @@ public class ClientListener implements Runnable {
   public void run() {
     try {
       Object message;
-      log.info("Waiting for messages from client.");
+      log.info("Waiting for messages from client: {}", clientDetails);
       while (isConnected && (message = objectInputStream.readObject()) != null) {
-        log.info("Processing message: {}", message);
-        // TODO
-        // create message processing unit
-        // create universal output stream unit
+        log.info("Processing message: {}, client: {}", message, clientDetails);
+        // TODO: create message processing unit
         processMessage(message);
       }
+    } catch (EOFException e) {
+      log.info("Catched exception: {}", e.getClass());
+      disconnect();
     } catch (Exception e) {
       log.error("Exception thrown while listening for client.", e);
       disconnect();
@@ -85,9 +89,9 @@ public class ClientListener implements Runnable {
 
   private void processClientChatRequest(ClientChatRequest request) {
     var clientMessage = new ClientMessage(request.getMessage(), clientDetails);
-    publicEventHistoryRepository.insertMessage(clientMessage);
-    var relayedMessage = new RelayedChatMessage(clientDetails.getId(), request.getMessage());
-    relayMessageToOtherClients(relayedMessage);
+    historizedEventService.recordMessage(clientMessage);
+    var otherClients = clientService.getClients(List.of(this));
+    EventNotificationService.notifyChatMessage(otherClients, clientDetails, clientMessage);
   }
 
   private void processClientCommandRequest(ClientCommandRequest request) {
@@ -97,46 +101,23 @@ public class ClientListener implements Runnable {
     }
   }
 
-  private void relayMessageToOtherClients(RelayedChatMessage message) {
-    ConnectionsListener.CONNECTED_CLIENT_CONTROLLERS.stream()
-        .filter(client -> client != this)
-        .forEach(client -> relayMessage(client, message));
-  }
-
-  public static void relayMessage(ClientListener client, Object message) {
-    try {
-      client.getObjectOutputStream().writeObject(message);
-      client.getObjectOutputStream().flush();
-    } catch (IOException e) {
-      log.error("Exception thrown, while relaying message to client.", e);
-    }
-  }
-
   private void sendChatHistory() {
     // TODO: fix evaluation of history type
-    var history = publicEventHistoryRepository.getHistory().stream()
-        .map(historyEvent -> "%s %s: %s".formatted(historyEvent.getRecordedAt().truncatedTo(ChronoUnit.SECONDS), historyEvent.getId(),
-            historyEvent.getEvent()))
+    var history = historizedEventService.getHistory().stream()
+        .map(historyEvent -> switch (historyEvent) {
+          case ClientActivity activity -> activity.getHistorizedLog();
+          case ClientMessage message -> message.getHistorizedLog();
+          default -> throw new IllegalStateException("Unexpected value: " + historyEvent);
+        })
         .toList();
-    try {
-      objectOutputStream.writeObject(new ChatHistoryResponse(history));
-      objectOutputStream.flush();
-    } catch (IOException e) {
-      log.error("Exception thrown, while sharing chat history.", e);
-    }
+    EventNotificationService.sendMessage(this, new ChatHistoryResponse(history));
   }
 
   private void sendClientList() {
-    // TODO: make nicer
-    var clients = ConnectionsListener.CONNECTED_CLIENT_CONTROLLERS.stream()
+    var clientDetailsList = clientService.getClients().stream()
         .map(client -> client.getClientDetails().getClientLog())
         .toList();
-    try {
-      objectOutputStream.writeObject(new ClientListResponse(clients));
-      objectOutputStream.flush();
-    } catch (IOException e) {
-      log.error("Exception thrown, while sharing chat history.", e);
-    }
+    EventNotificationService.sendMessage(this, new ClientListResponse(clientDetailsList));
   }
 
   private void disconnect() {
@@ -147,14 +128,13 @@ public class ClientListener implements Runnable {
       objectOutputStream.close();
       outputStream.close();
       socket.close();
-      ConnectionsListener.CONNECTED_CLIENT_CONTROLLERS.remove(this);
-      var clientActivity = new ClientActivity(HistoryEventType.CLIENT_DISCONNECTED, clientDetails);
-      publicEventHistoryRepository.insertMessage(clientActivity);
 
-      var relayedClientActivity = new RelayedClientActivity(this.clientDetails.getId(), ACTIVITY_TYPE.DISCONNECTED, Instant.now());
-      ConnectionsListener.CONNECTED_CLIENT_CONTROLLERS.forEach(c -> ClientListener.relayMessage(c, relayedClientActivity));
-      log.info("Disconnecting client. clients left: {}, disconnected client: {}", ConnectionsListener.CONNECTED_CLIENT_CONTROLLERS.size(),
-          clientDetails);
+      clientService.unregisterClient(this);
+
+      var clientActivity = new ClientActivity(HistorizedEventType.CLIENT_DISCONNECTED, clientDetails);
+      historizedEventService.recordMessage(clientActivity);
+
+      EventNotificationService.notifyClientActivity(clientService.getClients(), clientActivity, ActivityType.DISCONNECTED);
     } catch (Exception e) {
       log.error("Exception thrown while disconnecting the client.", e);
     }

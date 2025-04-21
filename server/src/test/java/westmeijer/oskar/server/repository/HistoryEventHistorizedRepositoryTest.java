@@ -5,11 +5,12 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import westmeijer.oskar.server.repository.history.ClientMessage;
+import westmeijer.oskar.server.service.model.ClientMessage;
+import westmeijer.oskar.server.service.HistorizedEventService;
 
-class HistoryEventHistoryRepositoryTest {
+class HistoryEventHistorizedRepositoryTest {
 
-  PublicEventHistoryRepository repo = PublicEventHistoryRepository.getInstance();
+  HistorizedEventService repo = HistorizedEventService.getInstance();
 
   @BeforeEach
   void clearHistory() {
@@ -18,8 +19,8 @@ class HistoryEventHistoryRepositoryTest {
 
   @Test
   void shouldBuildSingletonInstance() {
-    var repository1 = PublicEventHistoryRepository.getInstance();
-    var repository2 = PublicEventHistoryRepository.getInstance();
+    var repository1 = HistorizedEventService.getInstance();
+    var repository2 = HistorizedEventService.getInstance();
 
     then(repository1).isNotNull();
     then(repository2).isNotNull();
@@ -29,17 +30,17 @@ class HistoryEventHistoryRepositoryTest {
 
   @Test
   void shouldInitEmptyPublicEventList() {
-    var repo = PublicEventHistoryRepository.getInstance();
+    var repo = HistorizedEventService.getInstance();
 
     then(repo.getHistory()).isEmpty();
   }
 
   @Test
   void shouldAddPublicEvent() {
-    var repo = PublicEventHistoryRepository.getInstance();
+    var repo = HistorizedEventService.getInstance();
     var message = mock(ClientMessage.class);
 
-    repo.insertMessage(message);
+    repo.recordMessage(message);
 
     then(repo.getHistory()).containsExactly(message);
   }

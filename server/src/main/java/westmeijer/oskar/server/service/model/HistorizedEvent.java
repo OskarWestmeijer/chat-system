@@ -1,25 +1,22 @@
-package westmeijer.oskar.server.repository.history;
+package westmeijer.oskar.server.service.model;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public abstract class HistoryEvent implements Serializable {
-
-  @Serial
-  private static final long serialVersionUID = 1L;
+public abstract class HistorizedEvent {
 
   private final UUID id;
   private final Instant recordedAt;
-  private final HistoryEventType event;
+  private final HistorizedEventType event;
 
-  public HistoryEvent(HistoryEventType event) {
+  public HistorizedEvent(HistorizedEventType event) {
     this.id = UUID.randomUUID();
     this.recordedAt = Instant.now();
     this.event = Objects.requireNonNull(event, "event is required");
   }
+
+  abstract public String getHistorizedLog();
 }

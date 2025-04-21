@@ -4,27 +4,28 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.UUID;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 @Value
-public class RelayedClientActivity implements Serializable, ClientLogger {
+@EqualsAndHashCode(callSuper = true)
+public class RelayedClientActivity extends ServerMessage implements Serializable, ClientLogger {
 
   @Serial
   private static final long serialVersionUID = 57867855L;
 
-  UUID clientId;
+  String clientTag;
 
-  ACTIVITY_TYPE type;
+  ActivityType type;
 
   Instant recordedAt;
 
   @Override
   public String getClientLog() {
-    return "%s %s: %s".formatted(recordedAt.truncatedTo(ChronoUnit.SECONDS), clientId, type);
+    return "%s activity: %s %s".formatted(recordedAt.truncatedTo(ChronoUnit.SECONDS), clientTag, type);
   }
 
-  public static enum ACTIVITY_TYPE {
+  public enum ActivityType {
     CONNECTED,
     DISCONNECTED
   }

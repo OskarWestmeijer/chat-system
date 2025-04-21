@@ -1,32 +1,28 @@
-package westmeijer.oskar.server.repository.history;
+package westmeijer.oskar.server.service.model;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 import westmeijer.oskar.shared.model.response.ClientLogger;
 
 @Value
 @Builder
-@AllArgsConstructor
-public class ClientDetails implements Serializable, ClientLogger {
-
-  @Serial
-  private static final long serialVersionUID = 99141992L;
+public class ClientDetails implements ClientLogger {
 
   UUID id;
+
+  String tag;
 
   String ip;
 
   Instant connectedAt;
 
-  public static ClientDetails from(String clientIp) {
+  public static ClientDetails from(String clientIp, String tag) {
     return ClientDetails.builder()
         .id(UUID.randomUUID())
+        .tag(tag)
         .ip(clientIp)
         .connectedAt(Instant.now())
         .build();
@@ -34,6 +30,7 @@ public class ClientDetails implements Serializable, ClientLogger {
 
   @Override
   public String getClientLog() {
-    return "clientId: %s, connectedAt: %s".formatted(id, connectedAt.truncatedTo(ChronoUnit.SECONDS));
+    // TODO: is this required? check.
+    return "client: %s, connectedAt: %s".formatted(tag, connectedAt.truncatedTo(ChronoUnit.SECONDS));
   }
 }
