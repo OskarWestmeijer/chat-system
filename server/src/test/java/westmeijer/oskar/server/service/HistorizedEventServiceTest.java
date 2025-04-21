@@ -1,14 +1,15 @@
-package westmeijer.oskar.server.repository;
+package westmeijer.oskar.server.service;
 
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.assertj.core.api.BDDAssertions.thenThrownBy;
 import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import westmeijer.oskar.server.service.model.ClientMessage;
-import westmeijer.oskar.server.service.HistorizedEventService;
+import westmeijer.oskar.server.service.model.HistorizedEvent;
 
-class HistoryEventHistorizedRepositoryTest {
+class HistorizedEventServiceTest {
 
   HistorizedEventService repo = HistorizedEventService.getInstance();
 
@@ -29,20 +30,35 @@ class HistoryEventHistorizedRepositoryTest {
   }
 
   @Test
-  void shouldInitEmptyPublicEventList() {
+  void shouldInitEmptyHistory() {
     var repo = HistorizedEventService.getInstance();
 
     then(repo.getHistory()).isEmpty();
   }
 
   @Test
-  void shouldAddPublicEvent() {
+  void shouldRecordMessage() {
     var repo = HistorizedEventService.getInstance();
     var message = mock(ClientMessage.class);
 
     repo.recordMessage(message);
 
     then(repo.getHistory()).containsExactly(message);
+  }
+
+  @Test
+  void shouldNotAllowNullValues() {
+    thenThrownBy(() -> repo.recordMessage(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("historizedEvent is required");
+  }
+
+  @Test
+  void shouldClearHistory() {
+    repo.recordMessage(mock(HistorizedEvent.class));
+    repo.clearHistory();
+
+    then(repo.getHistory()).isEmpty();
   }
 
 }

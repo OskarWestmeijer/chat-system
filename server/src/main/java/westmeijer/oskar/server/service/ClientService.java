@@ -8,6 +8,7 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import westmeijer.oskar.server.client.ClientFactory;
 import westmeijer.oskar.server.client.ClientListener;
 import westmeijer.oskar.server.service.model.ClientDetails;
 
@@ -28,7 +29,7 @@ public class ClientService {
 
   public ClientListener registerClient(Socket socket) {
     var clientDetails = ClientDetails.from(socket.getInetAddress().getHostAddress(), generateUniqueTag());
-    var clientListener = new ClientListener(socket, clientDetails);
+    var clientListener = ClientFactory.create(socket, clientDetails);
     clients.add(clientListener);
     log.info("Registered client: {}", clientListener.getClientDetails());
     return clientListener;
