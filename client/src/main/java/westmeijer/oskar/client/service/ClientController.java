@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.time.Instant;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,14 +14,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import westmeijer.oskar.client.loggers.ChatLogger;
 import westmeijer.oskar.client.loggers.ServerLogger;
-import westmeijer.oskar.shared.model.ChatMessageDto;
-import westmeijer.oskar.shared.model.ClientConnectionDto;
+import westmeijer.oskar.shared.model.request.ClientChatRequest;
+import westmeijer.oskar.shared.model.request.ClientCommandRequest;
+import westmeijer.oskar.shared.model.request.EventType;
+import westmeijer.oskar.shared.model.response.ChatHistoryResponse;
+import westmeijer.oskar.shared.model.response.ClientListResponse;
+import westmeijer.oskar.shared.model.response.RelayedChatMessage;
+import westmeijer.oskar.shared.model.response.RelayedClientActivity;
+import westmeijer.oskar.shared.model.response.ServerMessage;
 
 @Slf4j
 @RequiredArgsConstructor
 public class ClientController {
-
-  private static final String SERVER_DISCONNECTION_COMMAND = "/goodbye";
 
   private boolean isConnected = false;
 
@@ -63,19 +68,45 @@ public class ClientController {
 
   private void writeMessageLoop() {
     try {
-      ServerLogger.log("--- Waiting for input ---");
+      ServerLogger.log("Start chatting. available commands: '/clients', '/history', '/quit'");
       while (isConnected) {
         String userInput = scanner.nextLine();
-        ChatMessageDto chatMessageDto = ChatMessageDto.builder()
-            .message(userInput)
-            .build();
-        objectOutputStream.writeObject(chatMessageDto);
-        objectOutputStream.flush();
 
-        if (userInput.equals("/quit")) {
-          disconnect();
+        switch (userInput) {
+          case "/clients" -> sendClientRequest(EventType.LIST_CLIENTS);
+          case "/history" -> sendClientRequest(EventType.CHAT_HISTORY);
+          case "/quit" -> disconnect();
+          default -> sendClientChatRequest(userInput);
         }
       }
+    } catch (Exception e) {
+      log.error("Exception thrown.", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void sendClientChatRequest(String message) {
+    try {
+      ClientChatRequest clientChatRequest = ClientChatRequest.builder()
+          .message(message)
+          .sendAt(Instant.now())
+          .build();
+      objectOutputStream.writeObject(clientChatRequest);
+      objectOutputStream.flush();
+    } catch (Exception e) {
+      log.error("Exception thrown.", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void sendClientRequest(EventType type) {
+    try {
+      var event = ClientCommandRequest.builder()
+          .eventType(type)
+          .sendAt(Instant.now())
+          .build();
+      objectOutputStream.writeObject(event);
+      objectOutputStream.flush();
     } catch (Exception e) {
       log.error("Exception thrown.", e);
       throw new RuntimeException(e);
@@ -90,43 +121,53 @@ public class ClientController {
       Thread.currentThread().setName("Listener");
       try {
         while (isConnected) {
-          Object serverMessage = objectInputStream.readObject();
-          if (serverMessage != null) {
-            processServerMessage(serverMessage);
-          }
+          ServerMessage serverMessage = (ServerMessage) objectInputStream.readObject();
+          processReceivedMessage(serverMessage);
         }
       } catch (Exception e) {
         log.error("Exception thrown. Shutting down client.", e);
+        disconnect();
         throw new RuntimeException(e);
       }
     };
     executorService.submit(listenForMessagesTask);
   }
 
-  private void processServerMessage(Object serverMessage) {
-    log.trace("Received message: {}", serverMessage);
-    if (serverMessage instanceof ChatMessageDto) {
-      processChatMessageDto((ChatMessageDto) serverMessage);
-    } else if (serverMessage instanceof ClientConnectionDto) {
-      processClientConnectionDto((ClientConnectionDto) serverMessage);
+  private void processReceivedMessage(ServerMessage message) {
+    log.trace("Received message: {}", message);
+    switch (message) {
+      case ChatHistoryResponse chatHistoryResponse -> processChatHistoryResponse(chatHistoryResponse);
+      case ClientListResponse clientListResponse -> processClientListResponse(clientListResponse);
+      case RelayedChatMessage relayedChatMessage -> processClientMessage(relayedChatMessage);
+      case RelayedClientActivity relayedClientActivity -> processClientActivity(relayedClientActivity);
+      default -> throw new RuntimeException("Could not process received message. %s".formatted(message));
     }
   }
 
-  private void processClientConnectionDto(ClientConnectionDto clientConnectionDto) {
-    ServerLogger.log(clientConnectionDto.toString());
+  private void processChatHistoryResponse(ChatHistoryResponse message) {
+    ServerLogger.log("-- START OF HISTORY --");
+    message.getMessageHistory().forEach(ServerLogger::log);
+    ServerLogger.log("-- END OF HISTORY --");
+    ServerLogger.log("");
   }
 
-  private void processChatMessageDto(ChatMessageDto chatMessage) {
-    if (chatMessage.getMessage().equals(SERVER_DISCONNECTION_COMMAND)) {
-      ServerLogger.log("---Received disconnection command from server.---");
-      disconnect();
-    } else {
-      ChatLogger.log("%s: %s".formatted(chatMessage.getClient().getId(), chatMessage.getMessage()));
-    }
+  private void processClientListResponse(ClientListResponse clientListResponse) {
+    ServerLogger.log("-- START OF CLIENT LIST --");
+    clientListResponse.getClients().forEach(ServerLogger::log);
+    ServerLogger.log("-- END OF CLIENT LIST --");
+    ServerLogger.log("");
+  }
+
+  private void processClientMessage(RelayedChatMessage message) {
+    ChatLogger.log(message.getClientLog());
+  }
+
+  private void processClientActivity(RelayedClientActivity message) {
+    ServerLogger.log(message.getClientLog());
   }
 
   private synchronized void disconnect() {
-    ServerLogger.log("--- Disconnecting ---");
+    ServerLogger.log("Disconnecting");
     try {
       isConnected = false;
       objectInputStream.close();
