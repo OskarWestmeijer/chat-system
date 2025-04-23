@@ -1,6 +1,7 @@
 # chat-system
 
 [![main-build-test-release](https://github.com/OskarWestmeijer/chat-system/actions/workflows/main-build-test-release.yml/badge.svg?branch=main)](https://github.com/OskarWestmeijer/chat-system/actions/workflows/main-build-test-release.yml)
+[![main-build-test-release](https://github.com/OskarWestmeijer/chat-system/actions/workflows/nightly-build.yml/badge.svg?branch=main)](https://github.com/OskarWestmeijer/chat-system/actions/workflows/nightly-build.yml)
 [![codecov](https://codecov.io/gh/OskarWestmeijer/chat-system/branch/main/graph/badge.svg?token=A03WA88I2Y)](https://codecov.io/gh/OskarWestmeijer/chat-system)
 
 TCP based client-server chat system. The server accepts client socket connections to participate in chat with others. Inspired by an example
@@ -24,13 +25,13 @@ exchanged models.
 ./gradlew clean check
 ```
 
-### run in IDE
+### Run in IDE
 
 - start `ServerMain.main()`
 - start `ClientMain.main()` for as many times as clients are needed
 - jump between the terminal sessions and start chatting
 
-### build executables and run
+### Build executables and run
 
 Execute jars in separate terminal tabs.
 
@@ -39,3 +40,7 @@ Execute jars in separate terminal tabs.
 java -jar server/build/libs/chat-system-server.jar
 java -jar client/build/libs/chat-system-client.jar
 ```
+
+### Update Gradle Wrapper
+
+`./gradlew wrapper --gradle-version latest`
