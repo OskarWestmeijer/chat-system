@@ -9,7 +9,9 @@ subprojects {
     group = 'westmeijer.oskar'
     version = '1.0'
 
-    sourceCompatibility = 21
+    java {
+        sourceCompatibility = JavaVersion.VERSION_21
+    }
 
     repositories {
         mavenCentral()
@@ -25,7 +27,9 @@ subprojects {
         testCompileOnly("org.projectlombok:lombok:1.18.38")
         testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
 
-        testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+        testImplementation(platform('org.junit:junit-bom:5.12.2'))
+        testImplementation('org.junit.jupiter:junit-jupiter')
+        testRuntimeOnly('org.junit.platform:junit-platform-launcher')
         testImplementation 'org.assertj:assertj-core:3.27.3'
         testImplementation 'org.mockito:mockito-core:5.17.0'
     }
