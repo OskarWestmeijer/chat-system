@@ -1,15 +1,13 @@
 package westmeijer.oskar.client.service;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import westmeijer.oskar.client.loggers.ChatLogger;
 import westmeijer.oskar.client.loggers.ServerLogger;
@@ -24,60 +22,20 @@ import westmeijer.oskar.shared.model.response.ServerMessage;
 public class ServerListener {
 
   @Getter
+  @Setter
   private boolean isConnected = false;
 
-  private final String serverIp;
+  private final Socket socket;
 
-  private final int serverPort;
-
-  private Socket socket;
-
-  private InputStream inputStream;
-
-  private ObjectInputStream objectInputStream;
-
-  private OutputStream outputStream;
+  private final ObjectInputStream objectInputStream;
 
   @Getter
-  private ObjectOutputStream objectOutputStream;
+  private final ObjectOutputStream objectOutputStream;
 
   private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
   void connect() {
-    try {
-      this.socket = new Socket(serverIp, serverPort);
-      this.isConnected = true;
-      outputStream = socket.getOutputStream();
-      objectOutputStream = new ObjectOutputStream(outputStream);
-      objectOutputStream.flush();
-      inputStream = socket.getInputStream();
-      objectInputStream = new ObjectInputStream(inputStream);
-      ServerLogger.log("Connected to Server at " + serverIp + " " + serverPort);
-      listenForMessagesLoop();
-    } catch (IOException e) {
-      log.error("Error while connecting to server.", e);
-      throw new RuntimeException(e);
-    }
-  }
-
-  void disconnect() {
-    try {
-      isConnected = false;
-      objectInputStream.close();
-      objectOutputStream.close();
-      outputStream.close();
-      inputStream.close();
-      socket.close();
-      executorService.shutdownNow();
-      System.exit(0);
-    } catch (Exception e) {
-      log.error("Exception thrown, while disconnecting.", e);
-      throw new RuntimeException(e);
-    }
-  }
-
-  private void listenForMessagesLoop() {
-    // TODO: when server shuts down, this application does not
+    // TODO: when server shuts down, this application does not. Control with future?
     Runnable listenForMessagesTask = () -> {
       try {
         while (isConnected) {
@@ -90,6 +48,23 @@ public class ServerListener {
       }
     };
     executorService.submit(listenForMessagesTask);
+    isConnected = true;
+  }
+
+  void disconnect() {
+    try {
+      // TODO: create disconnection unit, which closes each resource seperately with try catch.
+      isConnected = false;
+      objectInputStream.close();
+      objectOutputStream.close();
+      socket.getInputStream().close();
+      socket.getOutputStream().close();
+      socket.close();
+      executorService.shutdownNow();
+    } catch (Exception e) {
+      log.error("Exception thrown, while disconnecting.", e);
+      throw new RuntimeException(e);
+    }
   }
 
   private void processReceivedMessage(ServerMessage message) {

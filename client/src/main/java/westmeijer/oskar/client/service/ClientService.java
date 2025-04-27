@@ -23,7 +23,6 @@ public class ClientService {
       startTerminalScan();
     } catch (Exception e) {
       log.error("Exception received. Disconnecting from server.", e);
-      throw e;
     } finally {
       disconnect();
     }
@@ -38,7 +37,7 @@ public class ClientService {
         switch (userInput) {
           case "/clients" -> sendClientCommandRequest(EventType.LIST_CLIENTS);
           case "/history" -> sendClientCommandRequest(EventType.CHAT_HISTORY);
-          case "/quit" -> disconnect();
+          case "/quit" -> serverListener.setConnected(false);
           default -> sendClientChatRequest(userInput);
         }
       }

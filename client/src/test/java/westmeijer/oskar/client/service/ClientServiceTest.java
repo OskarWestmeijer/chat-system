@@ -1,6 +1,6 @@
 package westmeijer.oskar.client.service;
 
-import static org.assertj.core.api.BDDAssertions.thenThrownBy;
+import static org.assertj.core.api.BDDAssertions.thenNoException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
@@ -72,12 +72,10 @@ class ClientServiceTest {
     doThrow(new RuntimeException("Connection error")).when(serverListener).connect();
 
     // When
-    thenThrownBy(() -> clientService.start())
-        .isInstanceOf(RuntimeException.class)
-        .hasMessageContaining("Connection error");
+    thenNoException().isThrownBy(() -> clientService.start());
 
     // Then
-    BDDMockito.then(serverListener).should().connect();
+    BDDMockito.then(scanner).should().close();
     BDDMockito.then(serverListener).should().disconnect();
   }
 
@@ -115,8 +113,8 @@ class ClientServiceTest {
 
     // Then
     BDDMockito.then(scanner).should().nextLine();
-    BDDMockito.then(scanner).should(times(2)).close();
-    BDDMockito.then(serverListener).should(times(2)).disconnect();
+    BDDMockito.then(scanner).should().close();
+    BDDMockito.then(serverListener).should().disconnect();
   }
 
 }
