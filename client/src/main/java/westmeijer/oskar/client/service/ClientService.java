@@ -41,6 +41,7 @@ public class ClientService {
           default -> sendClientChatRequest(userInput);
         }
       }
+      log.info("No longer connected.");
     } catch (Exception e) {
       log.error("Exception thrown.", e);
       throw new RuntimeException(e);
@@ -64,6 +65,7 @@ public class ClientService {
   }
 
   private void disconnect() {
+    log.info("Disconnecting.");
     scanner.close();
     serverListener.disconnect();
   }

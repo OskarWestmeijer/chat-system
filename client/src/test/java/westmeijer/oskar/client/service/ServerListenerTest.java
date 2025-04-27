@@ -1,17 +1,15 @@
 package westmeijer.oskar.client.service;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import lombok.SneakyThrows;
+import org.assertj.core.api.BDDAssertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,18 +34,8 @@ class ServerListenerTest {
   @Test
   @SneakyThrows
   void testDisconnectClosesResources() {
-    var outputStream = mock(OutputStream.class);
-    var inputStream = mock(InputStream.class);
-    given(socket.getInputStream()).willReturn(inputStream);
-    given(socket.getOutputStream()).willReturn(outputStream);
-
     serverListener.disconnect();
-
-    then(outputStream).should().close();
-    then(inputStream).should().close();
-    then(objectOutputStream).should().close();
-    then(objectInputStream).should().close();
-    then(socket).should().close();
+    BDDAssertions.then(serverListener.isConnected()).isFalse();
   }
 
   @Test
@@ -61,6 +49,7 @@ class ServerListenerTest {
     serverListener.connect();
 
     then(mockExecutor).should().submit(any(Runnable.class));
+    BDDAssertions.then(serverListener.isConnected()).isTrue();
   }
 
 

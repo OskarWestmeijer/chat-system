@@ -34,6 +34,7 @@ public class ServerListener {
 
   private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+
   void connect() {
     // TODO: when server shuts down, this application does not. Control with future?
     Runnable listenForMessagesTask = () -> {
@@ -43,8 +44,7 @@ public class ServerListener {
           processReceivedMessage(serverMessage);
         }
       } catch (Exception e) {
-        log.error("Exception thrown. Shutting down client.", e);
-        throw new RuntimeException(e);
+        log.error("Exception, while listening for server stream.", e);
       }
     };
     executorService.submit(listenForMessagesTask);
@@ -52,19 +52,11 @@ public class ServerListener {
   }
 
   void disconnect() {
-    try {
-      // TODO: create disconnection unit, which closes each resource seperately with try catch.
-      isConnected = false;
-      objectInputStream.close();
-      objectOutputStream.close();
-      socket.getInputStream().close();
-      socket.getOutputStream().close();
-      socket.close();
-      executorService.shutdownNow();
-    } catch (Exception e) {
-      log.error("Exception thrown, while disconnecting.", e);
-      throw new RuntimeException(e);
-    }
+    isConnected = false;
+    executorService.shutdownNow();
+    StreamProvider.streamCloser.apply(objectInputStream);
+    StreamProvider.streamCloser.apply(objectOutputStream);
+    StreamProvider.streamCloser.apply(socket);
   }
 
   private void processReceivedMessage(ServerMessage message) {

@@ -1,9 +1,11 @@
 package westmeijer.oskar.client.service;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.function.Function;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class StreamProvider {
+
+  public static Function<Closeable, Boolean> streamCloser = o -> {
+    try {
+      o.close();
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  };
 
   private static StreamProvider instance;
 
