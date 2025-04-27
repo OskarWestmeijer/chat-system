@@ -1,73 +1,46 @@
 package westmeijer.oskar.client.service;
 
 
-import java.time.Instant;
-import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import westmeijer.oskar.client.loggers.ServerLogger;
-import westmeijer.oskar.shared.model.request.ClientChatRequest;
-import westmeijer.oskar.shared.model.request.ClientCommandRequest;
-import westmeijer.oskar.shared.model.request.EventType;
+import westmeijer.oskar.client.service.server.ServerListener;
+import westmeijer.oskar.client.service.terminal.TerminalListener;
 
 @Slf4j
 @RequiredArgsConstructor
 public class ClientService {
 
+  private final StreamProvider streamProvider;
+  private final ExecutorService executorService;
+  private final TerminalListener terminalListener;
   private final ServerListener serverListener;
-  private final Scanner scanner;
 
   public void start() {
     try {
-      serverListener.connect();
-      startTerminalScan();
+      var serverRunnable = serverListener.runnable();
+      var terminalRunnable = terminalListener.runnable();
+      streamProvider.setConnected(true);
+      var serverFuture = executorService.submit(serverRunnable);
+      var terminalFuture = executorService.submit(terminalRunnable);
+      while (!terminalFuture.isDone() && !serverFuture.isDone()) {
+        Thread.sleep(1000);
+        log.trace("Still connected." + terminalFuture.isDone() + " " + serverFuture.isDone());
+      }
     } catch (Exception e) {
       log.error("Exception received. Disconnecting from server.", e);
-    } finally {
-      disconnect();
-    }
-  }
-
-  private void startTerminalScan() {
-    try {
-      ServerLogger.log("Start chatting. available commands: '/clients', '/history', '/quit'");
-      while (serverListener.isConnected()) {
-        String userInput = scanner.nextLine();
-
-        switch (userInput) {
-          case "/clients" -> sendClientCommandRequest(EventType.LIST_CLIENTS);
-          case "/history" -> sendClientCommandRequest(EventType.CHAT_HISTORY);
-          case "/quit" -> serverListener.setConnected(false);
-          default -> sendClientChatRequest(userInput);
-        }
-      }
-      log.info("No longer connected.");
-    } catch (Exception e) {
-      log.error("Exception thrown.", e);
       throw new RuntimeException(e);
+    } finally {
+      stop();
     }
   }
 
-  private void sendClientChatRequest(String message) {
-    ClientChatRequest clientChatRequest = ClientChatRequest.builder()
-        .message(message)
-        .sendAt(Instant.now())
-        .build();
-    OutputRequest.send(serverListener.getObjectOutputStream(), clientChatRequest);
-  }
-
-  private void sendClientCommandRequest(EventType type) {
-    var event = ClientCommandRequest.builder()
-        .eventType(type)
-        .sendAt(Instant.now())
-        .build();
-    OutputRequest.send(serverListener.getObjectOutputStream(), event);
-  }
-
-  private void disconnect() {
+  private void stop() {
     log.info("Disconnecting.");
-    scanner.close();
-    serverListener.disconnect();
+    streamProvider.setConnected(false);
+    streamProvider.closeStreams();
+    executorService.shutdownNow();
+    streamProvider.exit();
   }
 
 }

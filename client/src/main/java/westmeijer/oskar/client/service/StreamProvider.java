@@ -5,16 +5,29 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Scanner;
 import java.util.function.Function;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import westmeijer.oskar.shared.model.response.ServerMessage;
 
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class StreamProvider {
 
-  public static Function<Closeable, Boolean> streamCloser = o -> {
+  private final Scanner scanner;
+
+  private final Socket socket;
+
+  private final ObjectInputStream objectInputStream;
+
+  private final ObjectOutputStream objectOutputStream;
+
+  @Getter
+  @Setter
+  private boolean isConnected = false;
+
+  private static final Function<Closeable, Boolean> streamCloser = o -> {
     try {
       o.close();
       return true;
@@ -23,16 +36,37 @@ public class StreamProvider {
     }
   };
 
-  private static StreamProvider instance;
-
-  public static synchronized StreamProvider getInstance() {
-    if (StreamProvider.instance == null) {
-      StreamProvider.instance = new StreamProvider();
-    }
-    return StreamProvider.instance;
+  public StreamProvider(Socket socket, Scanner scanner) {
+    this.socket = socket;
+    this.objectInputStream = createInput(socket);
+    this.objectOutputStream = createOutput(socket);
+    this.scanner = scanner;
   }
 
-  public ObjectOutputStream createOutput(Socket socket) {
+  public ServerMessage readFromStream() {
+    try {
+      return (ServerMessage) objectInputStream.readObject();
+    } catch (Exception e) {
+      log.trace("Exception, while listening for server stream.", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  public String readFromTerminal() {
+    return scanner.nextLine();
+  }
+
+  public void writeToStream(Object o) {
+    try {
+      objectOutputStream.writeObject(o);
+      objectOutputStream.flush();
+    } catch (Exception e) {
+      log.error("Exception thrown.", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  private ObjectOutputStream createOutput(Socket socket) {
     try {
       return new ObjectOutputStream(socket.getOutputStream());
     } catch (IOException e) {
@@ -41,13 +75,24 @@ public class StreamProvider {
     }
   }
 
-  public ObjectInputStream createInput(Socket socket) {
+  private ObjectInputStream createInput(Socket socket) {
     try {
       return new ObjectInputStream(socket.getInputStream());
     } catch (IOException e) {
       log.error("Error creating ObjectInputStream", e);
       throw new RuntimeException(e);
     }
+  }
+
+  public void closeStreams() {
+    streamCloser.apply(objectInputStream);
+    streamCloser.apply(objectOutputStream);
+    streamCloser.apply(socket);
+    scanner.close();
+  }
+
+  public void exit() {
+    System.exit(0);
   }
 
 }

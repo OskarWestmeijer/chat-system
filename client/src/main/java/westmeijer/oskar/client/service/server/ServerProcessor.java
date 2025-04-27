@@ -1,13 +1,5 @@
-package westmeijer.oskar.client.service;
+package westmeijer.oskar.client.service.server;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import westmeijer.oskar.client.loggers.ChatLogger;
 import westmeijer.oskar.client.loggers.ServerLogger;
@@ -18,48 +10,9 @@ import westmeijer.oskar.shared.model.response.RelayedClientActivity;
 import westmeijer.oskar.shared.model.response.ServerMessage;
 
 @Slf4j
-@RequiredArgsConstructor
-public class ServerListener {
+public class ServerProcessor {
 
-  @Getter
-  @Setter
-  private boolean isConnected = false;
-
-  private final Socket socket;
-
-  private final ObjectInputStream objectInputStream;
-
-  @Getter
-  private final ObjectOutputStream objectOutputStream;
-
-  private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-
-
-  void connect() {
-    // TODO: when server shuts down, this application does not. Control with future?
-    Runnable listenForMessagesTask = () -> {
-      try {
-        while (isConnected) {
-          ServerMessage serverMessage = (ServerMessage) objectInputStream.readObject();
-          processReceivedMessage(serverMessage);
-        }
-      } catch (Exception e) {
-        log.error("Exception, while listening for server stream.", e);
-      }
-    };
-    executorService.submit(listenForMessagesTask);
-    isConnected = true;
-  }
-
-  void disconnect() {
-    isConnected = false;
-    executorService.shutdownNow();
-    StreamProvider.streamCloser.apply(objectInputStream);
-    StreamProvider.streamCloser.apply(objectOutputStream);
-    StreamProvider.streamCloser.apply(socket);
-  }
-
-  private void processReceivedMessage(ServerMessage message) {
+  public void process(ServerMessage message) {
     log.trace("Received message: {}", message);
     switch (message) {
       case ChatHistoryResponse chatHistoryResponse -> processChatHistoryResponse(chatHistoryResponse);

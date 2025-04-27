@@ -1,120 +1,87 @@
 package westmeijer.oskar.client.service;
 
-import static org.assertj.core.api.BDDAssertions.thenNoException;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 
-import java.io.ObjectOutputStream;
-import java.util.Scanner;
+import static org.assertj.core.api.BDDAssertions.thenThrownBy;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.BDDMockito;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import westmeijer.oskar.shared.model.request.ClientChatRequest;
+import westmeijer.oskar.client.service.server.ServerListener;
+import westmeijer.oskar.client.service.terminal.TerminalListener;
 
 @ExtendWith(MockitoExtension.class)
 class ClientServiceTest {
 
   @Mock
-  private ServerListener serverListener;
-
+  private StreamProvider streamProvider;
   @Mock
-  private Scanner scanner;
+  private ExecutorService executorService;
+  @Mock
+  private TerminalListener terminalListener;
+  @Mock
+  private ServerListener serverListener;
+  @Mock
+  private Runnable terminalRunnable;
+  @Mock
+  private Runnable serverRunnable;
+  @Mock
+  private Future terminalFuture;
+  @Mock
+  private Future serverFuture;
 
-  @InjectMocks
   private ClientService clientService;
 
-  @Test
-  void shouldNotScanTerminalIfNoConnection() {
-    given(serverListener.isConnected()).willReturn(false);
-
-    clientService.start();
-
-    BDDMockito.then(serverListener).should().connect();
-    BDDMockito.then(serverListener).should().isConnected();
-    BDDMockito.then(scanner).should(never()).nextLine();
-    BDDMockito.then(scanner).should().close();
-    BDDMockito.then(serverListener).should().disconnect();
-  }
-
-  @Test
-  void shouldReceiveMessageAndStop() {
-    given(serverListener.isConnected())
-        .willReturn(true)
-        .willReturn(false);
-
-    var stream = mock(ObjectOutputStream.class);
-    given(serverListener.getObjectOutputStream()).willReturn(stream);
-
-    String chatMessage = "Hey";
-    given(scanner.nextLine()).willReturn(chatMessage);
-
-    clientService.start();
-
-    BDDMockito.then(serverListener).should().connect();
-    BDDMockito.then(serverListener).should(times(2)).isConnected();
-    BDDMockito.then(serverListener).should().getObjectOutputStream();
-    BDDMockito.then(scanner).should().nextLine();
-    BDDMockito.then(scanner).should().close();
-    BDDMockito.then(serverListener).should().disconnect();
-  }
-
-  @Test
-  void shouldHandleConnectionException() {
-    // Given
-    doThrow(new RuntimeException("Connection error")).when(serverListener).connect();
-
-    // When
-    thenNoException().isThrownBy(() -> clientService.start());
-
-    // Then
-    BDDMockito.then(scanner).should().close();
-    BDDMockito.then(serverListener).should().disconnect();
+  @BeforeEach
+  void setUp() {
+    clientService = new ClientService(streamProvider, executorService, terminalListener, serverListener);
   }
 
   @Test
   @SneakyThrows
-  void shouldSendChatMessageCorrectly() {
+  void shouldStartAndStopSuccessfully() {
     // Given
-    given(serverListener.isConnected()).willReturn(true).willReturn(false);
-    var stream = mock(ObjectOutputStream.class);
-    given(serverListener.getObjectOutputStream()).willReturn(stream);
-
-    String chatMessage = "Hello Server!";
-    given(scanner.nextLine()).willReturn(chatMessage);
+    given(serverListener.runnable()).willReturn(serverRunnable);
+    given(terminalListener.runnable()).willReturn(terminalRunnable);
+    given(executorService.submit(serverRunnable)).willReturn(serverFuture);
+    given(executorService.submit(terminalRunnable)).willReturn(terminalFuture);
+    given(terminalFuture.isDone()).willReturn(false, true); // First check false, second true
+    given(serverFuture.isDone()).willReturn(false, true);
 
     // When
     clientService.start();
 
     // Then
-    BDDMockito.then(serverListener).should().connect();
-    BDDMockito.then(scanner).should().nextLine();
-    BDDMockito.then(serverListener).should().getObjectOutputStream();
-    BDDMockito.then(stream).should().writeObject(any(ClientChatRequest.class)); // Assuming the message gets wrapped in the request
-    BDDMockito.then(scanner).should().close();
-    BDDMockito.then(serverListener).should().disconnect();
+    then(streamProvider).should().setConnected(true);
+    then(executorService).should().submit(serverRunnable);
+    then(executorService).should().submit(terminalRunnable);
+    then(streamProvider).should().setConnected(false);
+    then(streamProvider).should().closeStreams();
+    then(executorService).should().shutdownNow();
+    then(streamProvider).should().exit();
   }
 
   @Test
-  void shouldDisconnectWhenQuitCommandEntered() {
+  @SneakyThrows
+  void shouldStopAndThrowWhenExceptionOccurs() {
     // Given
-    given(serverListener.isConnected()).willReturn(true).willReturn(false);
-    given(scanner.nextLine()).willReturn("/quit");
+    given(serverListener.runnable()).willThrow(new RuntimeException("Test Exception"));
 
-    // When
-    clientService.start();
+    // When / Then
+    thenThrownBy(() -> clientService.start())
+        .isInstanceOf(RuntimeException.class)
+        .hasCauseInstanceOf(RuntimeException.class)
+        .hasRootCauseMessage("Test Exception");
 
-    // Then
-    BDDMockito.then(scanner).should().nextLine();
-    BDDMockito.then(scanner).should().close();
-    BDDMockito.then(serverListener).should().disconnect();
+    then(streamProvider).should().setConnected(false);
+    then(streamProvider).should().closeStreams();
+    then(executorService).should().shutdownNow();
+    then(streamProvider).should().exit();
   }
-
 }
