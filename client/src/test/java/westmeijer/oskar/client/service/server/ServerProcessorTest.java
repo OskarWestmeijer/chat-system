@@ -21,7 +21,7 @@ import westmeijer.oskar.shared.model.response.ServerMessage;
 @ExtendWith(MockitoExtension.class)
 class ServerProcessorTest {
 
-  private final ServerProcessor serverProcessor = new ServerProcessor();
+  private final ServerProcessor serverProcessor = ServerProcessor.getInstance();
 
   @Test
   void shouldProcessChatHistoryResponse() {

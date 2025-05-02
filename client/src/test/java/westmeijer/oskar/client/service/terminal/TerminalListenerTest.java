@@ -4,6 +4,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mockStatic;
 import static org.mockito.BDDMockito.never;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,14 +21,16 @@ class TerminalListenerTest {
 
   @Mock
   private StreamProvider streamProvider;
+
   @Mock
   private TerminalProcessor terminalProcessor;
 
-  private TerminalListener terminalListener;
+  private TerminalListener terminalListener = TerminalListener.init(streamProvider, terminalProcessor);
 
   @BeforeEach
-  void setUp() {
-    terminalListener = new TerminalListener(streamProvider, terminalProcessor);
+  void setup() {
+    TerminalListener.reset();
+    terminalListener = TerminalListener.init(streamProvider, terminalProcessor);
   }
 
   @Test

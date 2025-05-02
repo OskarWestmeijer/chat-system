@@ -15,7 +15,6 @@ runs:
 
     - shell: bash
       run: |
-        chmod +x gradlew 
         ./gradlew clean check
 
     - name: Upload JaCoCo coverage report

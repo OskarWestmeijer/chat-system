@@ -1,5 +1,8 @@
 package westmeijer.oskar.client.service.server;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import westmeijer.oskar.client.loggers.ChatLogger;
 import westmeijer.oskar.client.loggers.ServerLogger;
@@ -10,7 +13,11 @@ import westmeijer.oskar.shared.model.response.RelayedClientActivity;
 import westmeijer.oskar.shared.model.response.ServerMessage;
 
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ServerProcessor {
+
+  @Getter
+  private static final ServerProcessor instance = new ServerProcessor();
 
   public void process(ServerMessage message) {
     log.trace("Received message: {}", message);

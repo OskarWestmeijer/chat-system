@@ -16,6 +16,19 @@ public class ClientService {
   private final TerminalListener terminalListener;
   private final ServerListener serverListener;
 
+  private static ClientService instance;
+
+  public static ClientService init(
+      StreamProvider streamProvider,
+      ExecutorService executorService,
+      TerminalListener terminalListener,
+      ServerListener serverListener) {
+    if (instance == null) {
+      instance = new ClientService(streamProvider, executorService, terminalListener, serverListener);
+    }
+    return instance;
+  }
+
   public void start() {
     try {
       var serverRunnable = serverListener.runnable();
