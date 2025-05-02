@@ -26,7 +26,8 @@ class TerminalProcessorTest {
 
   @BeforeEach
   void setUp() {
-    terminalProcessor = new TerminalProcessor(streamProvider);
+    TerminalProcessor.reset();
+    terminalProcessor = TerminalProcessor.init(streamProvider);
   }
 
   @Test

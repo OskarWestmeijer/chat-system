@@ -3,6 +3,7 @@ package westmeijer.oskar.client.service.terminal;
 import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import westmeijer.oskar.client.service.StreamProvider;
@@ -11,7 +12,7 @@ import westmeijer.oskar.shared.model.request.ClientCommandRequest;
 import westmeijer.oskar.shared.model.request.EventType;
 
 @Slf4j
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class TerminalProcessor {
 
   private final StreamProvider streamProvider;
@@ -19,11 +20,14 @@ public class TerminalProcessor {
   private static TerminalProcessor instance;
 
   public static TerminalProcessor init(StreamProvider streamProvider) {
-    requireNonNull(streamProvider, "streamProvider is required");
     if (instance == null) {
       instance = new TerminalProcessor(streamProvider);
     }
     return instance;
+  }
+
+  static void reset() {
+    instance = null;
   }
 
   public void process(String input) {
