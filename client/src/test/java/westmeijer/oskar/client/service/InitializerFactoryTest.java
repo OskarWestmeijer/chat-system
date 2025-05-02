@@ -67,6 +67,18 @@ class InitializerFactoryTest {
   }
 
   @Test
+  void shouldThrowExceptionWhenObjectOutputStreamCreationFails() throws IOException {
+    // Given
+    willThrow(new IOException("OutputStream creation failed")).given(mockSocket).getOutputStream();
+
+    // When / Then
+    assertThatThrownBy(() -> InitializerFactory.createOutput(mockSocket))
+        .isInstanceOf(RuntimeException.class)
+        .hasCauseInstanceOf(IOException.class);
+  }
+
+
+  @Test
   void shouldThrowExceptionWhenObjectInputStreamCreationFails() throws IOException {
     // Given
     willThrow(new IOException("InputStream creation failed")).given(mockSocket).getInputStream();

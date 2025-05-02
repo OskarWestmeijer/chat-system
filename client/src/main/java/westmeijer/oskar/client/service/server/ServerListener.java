@@ -21,13 +21,6 @@ public class ServerListener {
     return instance;
   }
 
-  public static ServerListener getInstance() {
-    if (instance == null) {
-      throw new IllegalStateException("ServerListener is not initialized yet");
-    }
-    return instance;
-  }
-
   public Runnable runnable() {
     // TODO: when server shuts down, this application does not. Control with future?
     return () -> {
