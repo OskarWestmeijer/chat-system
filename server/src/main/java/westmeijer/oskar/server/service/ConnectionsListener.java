@@ -3,27 +3,25 @@ package westmeijer.oskar.server.service;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import westmeijer.oskar.server.ServerMain;
 import westmeijer.oskar.server.service.model.ClientActivity;
 import westmeijer.oskar.server.service.model.HistorizedEventType;
 import westmeijer.oskar.shared.model.response.RelayedClientActivity.ActivityType;
 
 @Slf4j
+@RequiredArgsConstructor
 public class ConnectionsListener {
 
   private final ServerSocket server;
-
   private final ClientService clientService = ClientService.getInstance();
   private final HistorizedEventService historizedEventService = HistorizedEventService.getInstance();
-
-  public ConnectionsListener(int port) throws IOException {
-    this.server = new ServerSocket(port);
-  }
 
   public void listenForConnection() {
     log.info("Created chat server. port: {}, connected clients count: {}", server.getLocalPort(), clientService.getClientsCount());
     try {
-      while (true) {
+      while (ServerMain.isListening()) {
         var socket = server.accept();
         handleNewConnection(socket);
       }
