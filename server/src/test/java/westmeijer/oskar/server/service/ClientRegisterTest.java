@@ -14,13 +14,12 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import westmeijer.oskar.server.client.ClientFactory;
 import westmeijer.oskar.server.client.ClientListener;
 import westmeijer.oskar.server.service.model.ClientDetails;
 
-class ClientServiceTest {
+class ClientRegisterTest {
 
-  private ClientService service;
+  private ClientRegister service;
   private Socket socket;
   private ClientListener clientListener;
 
@@ -29,14 +28,14 @@ class ClientServiceTest {
     socket = mock(Socket.class);
     clientListener = mock(ClientListener.class);
 
-    service = ClientService.getInstance();
+    service = ClientRegister.getInstance();
     service.getClients().forEach(service::unregisterClient); // remove all clients
   }
 
   @Test
   void shouldBuildSingletonInstance() {
-    var instance1 = ClientService.getInstance();
-    var instance2 = ClientService.getInstance();
+    var instance1 = ClientRegister.getInstance();
+    var instance2 = ClientRegister.getInstance();
 
     then(instance1).isSameAs(instance2);
   }
@@ -52,8 +51,8 @@ class ClientServiceTest {
     var details = ClientDetails.from("123.456.789", "#xyz");
     given(clientListener.getClientDetails()).willReturn(details);
 
-    try (MockedStatic<ClientFactory> mockedFactory = mockStatic(ClientFactory.class)) {
-      mockedFactory.when(() -> ClientFactory.create(eq(socket), any(ClientDetails.class)))
+    try (MockedStatic<ClientInitializer> mockedFactory = mockStatic(ClientInitializer.class)) {
+      mockedFactory.when(() -> ClientInitializer.create(eq(socket), any(ClientDetails.class)))
           .thenReturn(clientListener);
 
       // when
@@ -75,8 +74,8 @@ class ClientServiceTest {
     given(socket.getInetAddress()).willReturn(mock(InetAddress.class));
     given(socket.getInetAddress().getHostAddress()).willReturn("192.168.0.1");
 
-    try (MockedStatic<ClientFactory> mockedFactory = mockStatic(ClientFactory.class)) {
-      mockedFactory.when(() -> ClientFactory.create(eq(socket), any(ClientDetails.class)))
+    try (MockedStatic<ClientInitializer> mockedFactory = mockStatic(ClientInitializer.class)) {
+      mockedFactory.when(() -> ClientInitializer.create(eq(socket), any(ClientDetails.class)))
           .thenReturn(clientListener);
 
       var client = service.registerClient(socket);
@@ -105,8 +104,8 @@ class ClientServiceTest {
     given(inet1.getHostAddress()).willReturn("10.0.0.1");
     given(inet2.getHostAddress()).willReturn("10.0.0.2");
 
-    try (MockedStatic<ClientFactory> mockedFactory = mockStatic(ClientFactory.class)) {
-      mockedFactory.when(() -> ClientFactory.create(any(Socket.class), any(ClientDetails.class)))
+    try (MockedStatic<ClientInitializer> mockedFactory = mockStatic(ClientInitializer.class)) {
+      mockedFactory.when(() -> ClientInitializer.create(any(Socket.class), any(ClientDetails.class)))
           .thenReturn(clientListener, mock(ClientListener.class));
 
       var client1 = service.registerClient(socket1);
@@ -130,8 +129,8 @@ class ClientServiceTest {
     given(socket.getInetAddress()).willReturn(inet);
     given(inet.getHostAddress()).willReturn("localhost");
 
-    try (MockedStatic<ClientFactory> mockedFactory = mockStatic(ClientFactory.class)) {
-      mockedFactory.when(() -> ClientFactory.create(eq(socket), any(ClientDetails.class)))
+    try (MockedStatic<ClientInitializer> mockedFactory = mockStatic(ClientInitializer.class)) {
+      mockedFactory.when(() -> ClientInitializer.create(eq(socket), any(ClientDetails.class)))
           .thenReturn(clientListener);
       var client = service.registerClient(socket);
 
@@ -152,8 +151,8 @@ class ClientServiceTest {
     given(socket.getInetAddress()).willReturn(inet);
     given(inet.getHostAddress()).willReturn("client.host");
 
-    try (MockedStatic<ClientFactory> mockedFactory = mockStatic(ClientFactory.class)) {
-      mockedFactory.when(() -> ClientFactory.create(eq(socket), any(ClientDetails.class)))
+    try (MockedStatic<ClientInitializer> mockedFactory = mockStatic(ClientInitializer.class)) {
+      mockedFactory.when(() -> ClientInitializer.create(eq(socket), any(ClientDetails.class)))
           .thenReturn(clientListener);
       // TODO: it does not catch duplicates
 

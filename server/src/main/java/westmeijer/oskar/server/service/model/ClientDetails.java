@@ -19,13 +19,17 @@ public class ClientDetails implements ClientLogger {
 
   Instant connectedAt;
 
-  public static ClientDetails from(String clientIp, String tag) {
+  public static ClientDetails from(String clientIp) {
     return ClientDetails.builder()
         .id(UUID.randomUUID())
-        .tag(tag)
+        .tag(generateUniqueTag())
         .ip(clientIp)
         .connectedAt(Instant.now())
         .build();
+  }
+
+  private static String generateUniqueTag() {
+    return "#" + UUID.randomUUID().toString().substring(0, 3);
   }
 
   @Override

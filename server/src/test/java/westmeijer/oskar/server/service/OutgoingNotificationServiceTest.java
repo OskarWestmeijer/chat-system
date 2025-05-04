@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.BDDMockito.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
-import static org.mockito.BDDMockito.times;
 import static org.mockito.BDDMockito.willThrow;
 
 import java.io.IOException;
@@ -24,7 +23,7 @@ import westmeijer.oskar.shared.model.response.RelayedClientActivity;
 import westmeijer.oskar.shared.model.response.RelayedClientActivity.ActivityType;
 import westmeijer.oskar.shared.model.response.ServerMessage;
 
-class EventNotificationServiceTest {
+class OutgoingNotificationServiceTest {
 
   private ClientListener client;
   private ObjectOutputStream outputStream;
@@ -42,7 +41,7 @@ class EventNotificationServiceTest {
   void shouldSendMessage() {
     var serverMessage = mock(ServerMessage.class);
 
-    EventNotificationService.sendMessage(client, serverMessage);
+    OutgoingNotificationService.sendMessage(client, serverMessage);
 
     BDDMockito.then(outputStream).should().writeObject(serverMessage);
     BDDMockito.then(outputStream).should().flush();
@@ -54,7 +53,7 @@ class EventNotificationServiceTest {
     var serverMessage = mock(ServerMessage.class);
     willThrow(new IOException("Write failed")).given(outputStream).writeObject(serverMessage);
 
-    assertDoesNotThrow(() -> EventNotificationService.sendMessage(client, serverMessage));
+    assertDoesNotThrow(() -> OutgoingNotificationService.sendMessage(client, serverMessage));
 
     BDDMockito.then(outputStream).should().writeObject(serverMessage);
     BDDMockito.then(outputStream).shouldHaveNoMoreInteractions();
@@ -69,7 +68,7 @@ class EventNotificationServiceTest {
     var clients = List.of(client);
 
     // when
-    EventNotificationService.notifyClientActivity(clients, clientActivity, ActivityType.CONNECTED);
+    OutgoingNotificationService.notifyClientActivity(clients, clientActivity, ActivityType.CONNECTED);
 
     // then
     BDDMockito.then(outputStream).should().writeObject(any(RelayedClientActivity.class));
@@ -85,7 +84,7 @@ class EventNotificationServiceTest {
     var audience = List.of(client);
 
     // when
-    EventNotificationService.notifyChatMessage(audience, clientDetails, message);
+    OutgoingNotificationService.notifyChatMessage(audience, clientDetails, message);
 
     // then
     BDDMockito.then(outputStream).should().writeObject(any(RelayedChatMessage.class));

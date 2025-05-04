@@ -21,15 +21,15 @@ class ConnectionsListenerTest {
   @SneakyThrows
   void shouldNotStartAcceptingConnections() {
     // Given
-    try (var clientServiceMock = mockStatic(ClientService.class);
+    try (var clientServiceMock = mockStatic(ClientRegister.class);
         var historizedEventServiceMock = mockStatic(HistorizedEventService.class);
         var mainMock = mockStatic(ServerMain.class)) {
 
       var serverSocket = mock(ServerSocket.class);
-      var clientService = mock(ClientService.class);
+      var clientService = mock(ClientRegister.class);
       var historizedEventService = mock(HistorizedEventService.class);
 
-      clientServiceMock.when(ClientService::getInstance).thenReturn(clientService);
+      clientServiceMock.when(ClientRegister::getInstance).thenReturn(clientService);
       historizedEventServiceMock.when(HistorizedEventService::getInstance).thenReturn(historizedEventService);
       mainMock.when(ServerMain::isListening).thenReturn(false);
 
@@ -48,18 +48,18 @@ class ConnectionsListenerTest {
   @SneakyThrows
   void shouldHandleNewConnectionAndStartThread() {
     // Given
-    try (var clientServiceMock = mockStatic(ClientService.class);
+    try (var clientServiceMock = mockStatic(ClientRegister.class);
         var historizedEventServiceMock = mockStatic(HistorizedEventService.class);
         var mainMock = mockStatic(ServerMain.class)) {
 
       var clientSocket = mock(Socket.class);
       var clientListener = mock(ClientListener.class);
       var clientDetails = mock(ClientDetails.class);
-      var clientService = mock(ClientService.class);
+      var clientService = mock(ClientRegister.class);
       var historizedEventService = mock(HistorizedEventService.class);
       var serverSocket = mock(ServerSocket.class);
 
-      clientServiceMock.when(ClientService::getInstance).thenReturn(clientService);
+      clientServiceMock.when(ClientRegister::getInstance).thenReturn(clientService);
       historizedEventServiceMock.when(HistorizedEventService::getInstance).thenReturn(historizedEventService);
       mainMock.when(ServerMain::isListening).thenReturn(true).thenReturn(false);
 

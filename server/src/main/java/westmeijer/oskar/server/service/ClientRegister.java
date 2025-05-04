@@ -1,35 +1,30 @@
 package westmeijer.oskar.server.service;
 
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import westmeijer.oskar.server.client.ClientFactory;
 import westmeijer.oskar.server.client.ClientListener;
 import westmeijer.oskar.server.service.model.ClientDetails;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ClientService {
+public class ClientRegister {
 
   private final List<ClientListener> clients = new ArrayList<>();
 
-  private static ClientService instance;
+  private static ClientRegister instance;
 
-  public static synchronized ClientService getInstance() {
-    if (ClientService.instance == null) {
-      ClientService.instance = new ClientService();
+  public static synchronized ClientRegister getInstance() {
+    if (ClientRegister.instance == null) {
+      ClientRegister.instance = new ClientRegister();
     }
-    return ClientService.instance;
+    return ClientRegister.instance;
   }
 
-  public ClientListener registerClient(Socket socket) {
-    var clientDetails = ClientDetails.from(socket.getInetAddress().getHostAddress(), generateUniqueTag());
-    var clientListener = ClientFactory.create(socket, clientDetails);
+  public ClientListener registerClient(ClientListener clientListener) {
     clients.add(clientListener);
     log.info("Registered client: {}", clientListener.getClientDetails());
     return clientListener;
@@ -44,18 +39,14 @@ public class ClientService {
     return getClients(Collections.emptyList());
   }
 
-  public List<ClientListener> getClients(List<ClientListener> filter) {
+  public List<ClientListener> getClients(List<ClientDetails> filter) {
     return clients.stream()
-        .filter(client -> !filter.contains(client))
+        .filter(client -> !filter.contains(client.getClientDetails()))
         .toList();
   }
 
   public Integer getClientsCount() {
     return clients.size();
-  }
-
-  private String generateUniqueTag() {
-    return "#" + UUID.randomUUID().toString().substring(0, 3);
   }
 
 }
