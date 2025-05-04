@@ -1,6 +1,5 @@
 package westmeijer.oskar.server.service;
 
-import java.io.IOException;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -16,7 +15,7 @@ import westmeijer.oskar.shared.model.response.ServerMessage;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class EventNotificationService {
+public class OutgoingNotificationService {
 
   public static void notifyClientActivity(List<ClientListener> clients, ClientActivity clientActivity, ActivityType activityType) {
     var clientDetails = clientActivity.getClientDetails();
@@ -29,13 +28,8 @@ public class EventNotificationService {
     audience.forEach(client -> sendMessage(client, relayedMessage));
   }
 
-  public static void sendMessage(ClientListener client, ServerMessage message) {
-    try {
-      client.getObjectOutputStream().writeObject(message);
-      client.getObjectOutputStream().flush();
-    } catch (IOException e) {
-      log.error("Exception thrown, while relaying message to client.", e);
-    }
+  public static void sendMessage(ClientListener receiver, ServerMessage message) {
+    receiver.getClientStreamProvider().writeToStream(message);
   }
 
 }
