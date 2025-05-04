@@ -1,31 +1,23 @@
 package westmeijer.oskar.server.service;
 
 import static org.assertj.core.api.BDDAssertions.then;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
-import static org.mockito.Mockito.mockStatic;
 
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.List;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import westmeijer.oskar.server.client.ClientListener;
 import westmeijer.oskar.server.service.model.ClientDetails;
 
 class ClientRegisterTest {
 
   private ClientRegister service;
-  private Socket socket;
   private ClientListener clientListener;
 
   @BeforeEach
   void resetService() {
-    socket = mock(Socket.class);
     clientListener = mock(ClientListener.class);
 
     service = ClientRegister.getInstance();
@@ -43,127 +35,80 @@ class ClientRegisterTest {
   @Test
   @SneakyThrows
   void shouldRegisterClient() {
-    // given
-    var inet = mock(InetAddress.class);
-    given(socket.getInetAddress()).willReturn(inet);
-    given(inet.getHostAddress()).willReturn("123.456.789");
+    // when
+    var result = service.registerClient(clientListener);
 
-    var details = ClientDetails.from("123.456.789", "#xyz");
-    given(clientListener.getClientDetails()).willReturn(details);
-
-    try (MockedStatic<ClientInitializer> mockedFactory = mockStatic(ClientInitializer.class)) {
-      mockedFactory.when(() -> ClientInitializer.create(eq(socket), any(ClientDetails.class)))
-          .thenReturn(clientListener);
-
-      // when
-      var result = service.registerClient(socket);
-
-      // then
-      then(result).isEqualTo(clientListener);
-      then(service.getClients())
-          .hasSize(1)
-          .contains(clientListener);
-    }
+    // then
+    then(result).isEqualTo(clientListener);
+    then(service.getClients())
+        .hasSize(1)
+        .contains(clientListener);
   }
 
   @Test
   @SneakyThrows
   void shouldUnregisterClient() {
     // given
-    var socket = mock(Socket.class);
-    given(socket.getInetAddress()).willReturn(mock(InetAddress.class));
-    given(socket.getInetAddress().getHostAddress()).willReturn("192.168.0.1");
+    var client = service.registerClient(clientListener);
 
-    try (MockedStatic<ClientInitializer> mockedFactory = mockStatic(ClientInitializer.class)) {
-      mockedFactory.when(() -> ClientInitializer.create(eq(socket), any(ClientDetails.class)))
-          .thenReturn(clientListener);
+    // when
+    var removed = service.unregisterClient(client);
 
-      var client = service.registerClient(socket);
-
-      // when
-      var removed = service.unregisterClient(client);
-
-      // then
-      then(removed).isTrue();
-      then(service.getClients())
-          .isEmpty();
-    }
+    // then
+    then(removed).isTrue();
+    then(service.getClients())
+        .isEmpty();
   }
 
   @Test
   @SneakyThrows
   void shouldReturnFilteredClients() {
     // given
-    var socket1 = mock(Socket.class);
-    var socket2 = mock(Socket.class);
-    var inet1 = mock(InetAddress.class);
-    var inet2 = mock(InetAddress.class);
+    var filterOut = mock(ClientListener.class);
+    var filterOutDetails = mock(ClientDetails.class);
+    given(filterOut.getClientDetails()).willReturn(filterOutDetails);
 
-    given(socket1.getInetAddress()).willReturn(inet1);
-    given(socket2.getInetAddress()).willReturn(inet2);
-    given(inet1.getHostAddress()).willReturn("10.0.0.1");
-    given(inet2.getHostAddress()).willReturn("10.0.0.2");
+    given(clientListener.getClientDetails()).willReturn(mock(ClientDetails.class));
+    service.registerClient(clientListener);
+    service.registerClient(filterOut);
 
-    try (MockedStatic<ClientInitializer> mockedFactory = mockStatic(ClientInitializer.class)) {
-      mockedFactory.when(() -> ClientInitializer.create(any(Socket.class), any(ClientDetails.class)))
-          .thenReturn(clientListener, mock(ClientListener.class));
+    // when
+    List<ClientListener> filteredClients = service.getClients(List.of(filterOutDetails));
 
-      var client1 = service.registerClient(socket1);
-      var client2 = service.registerClient(socket2);
-
-      // when
-      List<ClientListener> filteredClients = service.getClients(List.of(client1));
-
-      // then
-      then(filteredClients).containsExactly(client2);
-      then(service.getClients()).hasSize(2);
-    }
+    // then
+    then(filteredClients).containsExactly(clientListener);
+    then(service.getClients()).hasSize(2);
+    then(service.getClientsCount()).isEqualTo(2);
   }
 
   @Test
   @SneakyThrows
   void shouldReturnAllClientsWhenNoFilterProvided() {
     // given
-    var socket = mock(Socket.class);
-    var inet = mock(InetAddress.class);
-    given(socket.getInetAddress()).willReturn(inet);
-    given(inet.getHostAddress()).willReturn("localhost");
+    var client2 = mock(ClientListener.class);
+    service.registerClient(clientListener);
+    service.registerClient(client2);
 
-    try (MockedStatic<ClientInitializer> mockedFactory = mockStatic(ClientInitializer.class)) {
-      mockedFactory.when(() -> ClientInitializer.create(eq(socket), any(ClientDetails.class)))
-          .thenReturn(clientListener);
-      var client = service.registerClient(socket);
+    // when
+    List<ClientListener> filteredClients = service.getClients();
 
-      // when
-      var clients = service.getClients();
-
-      // then
-      then(clients).containsExactly(client);
-    }
+    // then
+    then(filteredClients).containsExactlyInAnyOrder(clientListener, client2);
+    then(service.getClients()).hasSize(2);
+    then(service.getClientsCount()).isEqualTo(2);
   }
 
   @Test
   @SneakyThrows
   void shouldReturnClientCount() {
     // given
-    var socket = mock(Socket.class);
-    var inet = mock(InetAddress.class);
-    given(socket.getInetAddress()).willReturn(inet);
-    given(inet.getHostAddress()).willReturn("client.host");
+    service.registerClient(clientListener);
+    service.registerClient(mock(ClientListener.class));
 
-    try (MockedStatic<ClientInitializer> mockedFactory = mockStatic(ClientInitializer.class)) {
-      mockedFactory.when(() -> ClientInitializer.create(eq(socket), any(ClientDetails.class)))
-          .thenReturn(clientListener);
-      // TODO: it does not catch duplicates
+    // when
+    var count = service.getClientsCount();
 
-      service.registerClient(socket);
-      service.registerClient(socket);
-
-      // when
-      var count = service.getClientsCount();
-
-      // then
-      then(count).isEqualTo(2);
-    }
+    // then
+    then(count).isEqualTo(2);
   }
 }

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import westmeijer.oskar.server.client.ClientListener;
@@ -16,14 +17,8 @@ public class ClientRegister {
 
   private final List<ClientListener> clients = new ArrayList<>();
 
-  private static ClientRegister instance;
-
-  public static synchronized ClientRegister getInstance() {
-    if (ClientRegister.instance == null) {
-      ClientRegister.instance = new ClientRegister();
-    }
-    return ClientRegister.instance;
-  }
+  @Getter
+  private static final ClientRegister instance = new ClientRegister();
 
   public ClientListener registerClient(ClientListener clientListener) {
     clients.add(clientListener);

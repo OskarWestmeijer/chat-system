@@ -1,19 +1,17 @@
 package westmeijer.oskar.server.service;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.BDDMockito.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
-import static org.mockito.BDDMockito.willThrow;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.List;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import westmeijer.oskar.server.client.ClientListener;
+import westmeijer.oskar.server.client.ClientStreamProvider;
 import westmeijer.oskar.server.service.model.ClientActivity;
 import westmeijer.oskar.server.service.model.ClientDetails;
 import westmeijer.oskar.server.service.model.ClientMessage;
@@ -26,14 +24,14 @@ import westmeijer.oskar.shared.model.response.ServerMessage;
 class OutgoingNotificationServiceTest {
 
   private ClientListener client;
-  private ObjectOutputStream outputStream;
+  private ClientStreamProvider provider;
 
   @BeforeEach
   void setUp() {
     client = mock(ClientListener.class);
-    outputStream = mock(ObjectOutputStream.class);
+    provider = mock(ClientStreamProvider.class);
 
-    given(client.getObjectOutputStream()).willReturn(outputStream);
+    given(client.getClientStreamProvider()).willReturn(provider);
   }
 
   @Test
@@ -43,27 +41,15 @@ class OutgoingNotificationServiceTest {
 
     OutgoingNotificationService.sendMessage(client, serverMessage);
 
-    BDDMockito.then(outputStream).should().writeObject(serverMessage);
-    BDDMockito.then(outputStream).should().flush();
-  }
-
-  @Test
-  @SneakyThrows
-  void shouldNotThrowExceptionOnFailure() {
-    var serverMessage = mock(ServerMessage.class);
-    willThrow(new IOException("Write failed")).given(outputStream).writeObject(serverMessage);
-
-    assertDoesNotThrow(() -> OutgoingNotificationService.sendMessage(client, serverMessage));
-
-    BDDMockito.then(outputStream).should().writeObject(serverMessage);
-    BDDMockito.then(outputStream).shouldHaveNoMoreInteractions();
+    BDDMockito.then(client).should().getClientStreamProvider();
+    BDDMockito.then(provider).should().writeToStream(serverMessage);
   }
 
   @Test
   @SneakyThrows
   void shouldNotifyClientActivity() {
     // given
-    var clientDetails = ClientDetails.from("#123", "1234");
+    var clientDetails = ClientDetails.from("1234");
     var clientActivity = new ClientActivity(HistorizedEventType.CLIENT_CONNECTED, clientDetails);
     var clients = List.of(client);
 
@@ -71,14 +57,14 @@ class OutgoingNotificationServiceTest {
     OutgoingNotificationService.notifyClientActivity(clients, clientActivity, ActivityType.CONNECTED);
 
     // then
-    BDDMockito.then(outputStream).should().writeObject(any(RelayedClientActivity.class));
-    BDDMockito.then(outputStream).should().flush();
+    BDDMockito.then(client).should().getClientStreamProvider();
+    BDDMockito.then(provider).should().writeToStream(any(RelayedClientActivity.class));
   }
 
   @Test
   void shouldNotifyChatMessage() throws IOException {
     // given
-    var clientDetails = ClientDetails.from("#123", "1234");
+    var clientDetails = ClientDetails.from("1234");
     var message = mock(ClientMessage.class);
     given(message.getMessage()).willReturn("Hello world");
     var audience = List.of(client);
@@ -87,8 +73,8 @@ class OutgoingNotificationServiceTest {
     OutgoingNotificationService.notifyChatMessage(audience, clientDetails, message);
 
     // then
-    BDDMockito.then(outputStream).should().writeObject(any(RelayedChatMessage.class));
-    BDDMockito.then(outputStream).should().flush();
+    BDDMockito.then(client).should().getClientStreamProvider();
+    BDDMockito.then(provider).should().writeToStream(any(RelayedChatMessage.class));
   }
 
 }
