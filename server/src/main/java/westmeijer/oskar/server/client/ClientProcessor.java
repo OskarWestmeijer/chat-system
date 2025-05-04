@@ -56,16 +56,19 @@ public class ClientProcessor {
           default -> throw new IllegalStateException("Unexpected value: " + historyEvent);
         })
         .toList();
-    var self = clientRegister.getClients(List.of(this.clientDetails)).getFirst();
-    OutgoingNotificationService.sendMessage(self, new ChatHistoryResponse(history));
+    OutgoingNotificationService.sendMessage(getSelf(), new ChatHistoryResponse(history));
   }
 
   private void sendClientList() {
     var clientDetailsList = clientRegister.getClients().stream()
         .map(client -> client.getClientDetails().getClientLog())
         .toList();
-    var self = clientRegister.getClients(List.of(this.clientDetails)).getFirst();
-    OutgoingNotificationService.sendMessage(self, new ClientListResponse(clientDetailsList));
+    OutgoingNotificationService.sendMessage(getSelf(), new ClientListResponse(clientDetailsList));
+  }
+
+  private ClientListener getSelf() {
+    return clientRegister.getClient(this.clientDetails)
+        .orElseThrow(() -> new RuntimeException("Client not registered: %s".formatted(clientDetails)));
   }
 
 }

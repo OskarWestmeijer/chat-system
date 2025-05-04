@@ -12,8 +12,8 @@ public class ClientInitializer {
 
   public ClientListener init(Socket clientSocket, HistorizedEventService history, ClientRegister register) {
     var details = ClientDetails.from(clientSocket.getInetAddress().getHostAddress());
-    var inputStream = ClientStreamProvider.createInput(clientSocket);
     var outputStream = ClientStreamProvider.createOutput(clientSocket);
+    var inputStream = ClientStreamProvider.createInput(clientSocket);
     var streams = new ClientStreamProvider(clientSocket, inputStream, outputStream);
     var processor = new ClientProcessor(history, register, details);
 

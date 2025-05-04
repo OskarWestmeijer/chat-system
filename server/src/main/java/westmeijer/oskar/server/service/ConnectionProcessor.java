@@ -9,7 +9,7 @@ import westmeijer.oskar.shared.model.response.RelayedClientActivity.ActivityType
 
 @Slf4j
 @RequiredArgsConstructor
-public class ServerConnectionProcessor {
+public class ConnectionProcessor {
 
   // TODO: singleton
   private final HistorizedEventService historizedEventService;
@@ -17,7 +17,6 @@ public class ServerConnectionProcessor {
   private final ClientRegister clientRegister;
 
   void process(Socket socket) {
-    log.info("Process new client.");
     var clientListener = clientInitializer.init(socket, historizedEventService, clientRegister);
     clientRegister.registerClient(clientListener);
     var clientDetails = clientListener.getClientDetails();

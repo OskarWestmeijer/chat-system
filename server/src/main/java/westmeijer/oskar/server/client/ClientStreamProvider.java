@@ -23,7 +23,7 @@ public class ClientStreamProvider {
 
   @Getter
   @Setter
-  private boolean isConnected = false;
+  private boolean isConnected = true;
 
   private static final Function<Closeable, Boolean> streamCloser = o -> {
     try {
@@ -61,7 +61,9 @@ public class ClientStreamProvider {
 
   public static ObjectOutputStream createOutput(Socket socket) {
     try {
-      return new ObjectOutputStream(socket.getOutputStream());
+      var stream = new ObjectOutputStream(socket.getOutputStream());
+      stream.flush();
+      return stream;
     } catch (IOException e) {
       log.error("Error creating ObjectOutputStream", e);
       throw new RuntimeException(e);

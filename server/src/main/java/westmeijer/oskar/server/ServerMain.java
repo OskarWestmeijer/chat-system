@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import westmeijer.oskar.server.service.ClientInitializer;
 import westmeijer.oskar.server.service.ClientRegister;
-import westmeijer.oskar.server.service.ConnectionsListener;
+import westmeijer.oskar.server.service.ConnectionListener;
 import westmeijer.oskar.server.service.HistorizedEventService;
-import westmeijer.oskar.server.service.ServerConnectionProcessor;
+import westmeijer.oskar.server.service.ConnectionProcessor;
 
 public class ServerMain {
 
@@ -14,10 +14,10 @@ public class ServerMain {
     var clientRegister = ClientRegister.getInstance();
     var historizedEventService = HistorizedEventService.getInstance();
     var clientInitializer = new ClientInitializer();
-    var serverProcessor = new ServerConnectionProcessor(historizedEventService, clientInitializer, clientRegister);
+    var serverProcessor = new ConnectionProcessor(historizedEventService, clientInitializer, clientRegister);
 
     var server = new ServerSocket(5123);
-    var serverController = new ConnectionsListener(server, serverProcessor);
+    var serverController = new ConnectionListener(server, serverProcessor);
     serverController.listenForConnection();
   }
 

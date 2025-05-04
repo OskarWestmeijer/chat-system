@@ -15,7 +15,7 @@ import westmeijer.oskar.server.ServerMain;
 import westmeijer.oskar.server.client.ClientListener;
 import westmeijer.oskar.server.service.model.ClientDetails;
 
-class ConnectionsListenerTest {
+class ConnectionListenerTest {
 
   @Test
   @SneakyThrows
@@ -33,7 +33,7 @@ class ConnectionsListenerTest {
       historizedEventServiceMock.when(HistorizedEventService::getInstance).thenReturn(historizedEventService);
       mainMock.when(ServerMain::isListening).thenReturn(false);
 
-      var listener = new ConnectionsListener(serverSocket);
+      var listener = new ConnectionListener(serverSocket);
 
       // When
       listener.listenForConnection();
@@ -69,7 +69,7 @@ class ConnectionsListenerTest {
       given(clientService.getClients()).willReturn(new java.util.ArrayList<>());
       given(clientService.getClientsCount()).willReturn(1);
 
-      var listener = new ConnectionsListener(serverSocket);
+      var listener = new ConnectionListener(serverSocket);
 
       // When
       listener.listenForConnection();

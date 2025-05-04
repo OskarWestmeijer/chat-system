@@ -34,13 +34,11 @@ public class ClientService {
       var serverRunnable = serverListener.runnable();
       var terminalRunnable = terminalListener.runnable();
       streamProvider.setConnected(true);
-      log.info("submitting runnables");
       var serverFuture = executorService.submit(serverRunnable);
       var terminalFuture = executorService.submit(terminalRunnable);
-      log.info("got here");
       while (!terminalFuture.isDone() && !serverFuture.isDone()) {
         Thread.sleep(1000);
-        log.info("Still connected." + terminalFuture.isDone() + " " + serverFuture.isDone());
+        log.trace("Still connected." + terminalFuture.isDone() + " " + serverFuture.isDone());
       }
     } catch (Exception e) {
       log.error("Exception received. Disconnecting from server.", e);

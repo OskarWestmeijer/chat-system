@@ -37,6 +37,7 @@ public class ClientListener implements Runnable {
   }
 
   private void disconnect() {
+    log.info("Disconnecting client: {}", clientDetails);
     try {
       clientStreamProvider.setConnected(false);
       clientStreamProvider.closeStreams();

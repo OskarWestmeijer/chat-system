@@ -7,18 +7,18 @@ import westmeijer.oskar.server.ServerMain;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ConnectionsListener {
+public class ConnectionListener {
 
   // TODO: singleton
   private final ServerSocket server;
-  private final ServerConnectionProcessor serverConnectionProcessor;
+  private final ConnectionProcessor connectionProcessor;
 
   public void listenForConnection() {
     log.info("Created chat server. port: {}", server.getLocalPort());
     while (ServerMain.isListening()) {
       try {
         var clientSocket = server.accept();
-        serverConnectionProcessor.process(clientSocket);
+        connectionProcessor.process(clientSocket);
       } catch (Exception e) {
         log.error("Exception thrown.", e);
       }
