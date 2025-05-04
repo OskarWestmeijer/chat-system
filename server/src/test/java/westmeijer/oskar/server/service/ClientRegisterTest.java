@@ -111,4 +111,36 @@ class ClientRegisterTest {
     // then
     then(count).isEqualTo(2);
   }
+
+  @Test
+  void shouldReturnEmptyClient() {
+    var client = service.getClient(mock(ClientDetails.class));
+    then(client).isEmpty();
+  }
+
+  @Test
+  void shouldReturnEmptyClientOnNoMatch() {
+    var clientDetails = mock(ClientDetails.class);
+    var listener = mock(ClientListener.class);
+    given(listener.getClientDetails()).willReturn(clientDetails);
+
+    service.registerClient(listener);
+
+    var client = service.getClient(mock(ClientDetails.class));
+    then(client).isEmpty();
+  }
+
+  @Test
+  void shouldReturnClient() {
+    var clientDetails = mock(ClientDetails.class);
+    var listener = mock(ClientListener.class);
+    given(listener.getClientDetails()).willReturn(clientDetails);
+
+    service.registerClient(listener);
+
+    var client = service.getClient(clientDetails);
+    then(client).contains(listener);
+  }
+
+
 }
