@@ -32,6 +32,7 @@ public class ClientListener implements Runnable {
       }
     } catch (Exception e) {
       log.error("Exception thrown while listening for client.", e);
+    } finally {
       disconnect();
     }
   }
