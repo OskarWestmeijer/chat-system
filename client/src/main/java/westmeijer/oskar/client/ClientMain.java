@@ -7,9 +7,7 @@ import westmeijer.oskar.client.service.ClientInitializer;
 public class ClientMain {
 
   public static void main(String[] args) {
-    var initializer = new ClientInitializer();
-    var clientService = initializer.init();
-    clientService.start();
+    new ClientInitializer().init().start();
   }
 
 }
