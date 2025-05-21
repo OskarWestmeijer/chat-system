@@ -18,31 +18,21 @@ class ClientListenerTest {
   @Test
   @SneakyThrows
   void shouldProcessMessageAndDisconnectClient() {
-    // Arrange
     var historizedEventService = mock(HistorizedEventService.class);
     var clientRegister = mock(ClientRegister.class);
     var clientStreamProvider = mock(ClientStreamProvider.class);
     var clientProcessor = mock(ClientProcessor.class);
     var clientDetails = mock(ClientDetails.class);
 
-    // Create the ClientListener instance
     var clientListener = new ClientListener(historizedEventService, clientRegister, clientStreamProvider, clientProcessor, clientDetails);
 
-    // Mock stream provider behavior
-    when(clientStreamProvider.isConnected()).thenReturn(true, false); // Simulate one message read, then disconnect
+    when(clientStreamProvider.isConnected()).thenReturn(true, false);
     when(clientStreamProvider.readFromStream()).thenReturn("Message");
 
-    // Run the ClientListener in a separate thread to simulate asynchronous processing
-    Thread listenerThread = new Thread(clientListener);
-    listenerThread.start();
-
-    // Simulate stopping the client after the first message
     given(clientStreamProvider.readFromStream()).willReturn("Message");
 
-    // Simulate disconnecting
-    listenerThread.join(); // Wait for the listener to finish processing
+    clientListener.run();
 
-    // Verify interactions during disconnect
     verify(clientStreamProvider).closeStreams();
     verify(clientRegister).unregisterClient(clientListener);
     verify(historizedEventService).recordMessage(any(ClientActivity.class));
@@ -52,28 +42,19 @@ class ClientListenerTest {
   @Test
   @SneakyThrows
   void shouldHandleExceptionDuringMessageProcessing() {
-    // Arrange
     var historizedEventService = mock(HistorizedEventService.class);
     var clientRegister = mock(ClientRegister.class);
     var clientStreamProvider = mock(ClientStreamProvider.class);
     var clientProcessor = mock(ClientProcessor.class);
     var clientDetails = mock(ClientDetails.class);
 
-    // Create the ClientListener instance
     var clientListener = new ClientListener(historizedEventService, clientRegister, clientStreamProvider, clientProcessor, clientDetails);
 
-    // Mock stream provider to simulate an exception while reading the message
     when(clientStreamProvider.isConnected()).thenReturn(true);
     when(clientStreamProvider.readFromStream()).thenThrow(new RuntimeException("Test Exception"));
 
-    // Run the ClientListener in a separate thread to simulate asynchronous processing
-    Thread listenerThread = new Thread(clientListener);
-    listenerThread.start();
+    clientListener.run();
 
-    // Wait for the listener to handle the exception and disconnect
-    listenerThread.join();
-
-    // Verify interactions during exception handling
     verify(clientStreamProvider).readFromStream();
     verify(clientStreamProvider).closeStreams();
     verify(clientRegister).unregisterClient(clientListener);
